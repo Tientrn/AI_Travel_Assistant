@@ -36,6 +36,10 @@ export default function RootLayout() {
           name="screens/TripFeedbackScreen"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="screens/CarRentalScreen"
+          options={{ headerShown: false }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GestureHandlerRootView>
