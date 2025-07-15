@@ -7,22 +7,24 @@ type DetailBookingProps = {
   pickup: string;
   selectedTime: string;
   selectedCar: string;
+  onEdit?: () => void;
+  onConfirm?: () => void;
 };
 
-export default function DetailBooking({ destination, pickup, selectedTime, selectedCar }: DetailBookingProps) {
+export default function DetailBooking({ destination, pickup, selectedTime, selectedCar, onEdit, onConfirm }: DetailBookingProps) {
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Chi tiết chuyến đi</Text>
-        <TouchableOpacity style={styles.editBtn}>
-          <MaterialIcons name="edit" size={18} color="#fff" />
+        <TouchableOpacity style={styles.editBtn} onPress={onEdit}>
+          <MaterialIcons name="edit" size={18} color="#F4C95D" />
         </TouchableOpacity>
       </View>
       {/* Điểm đón */}
       <View style={styles.row}>
         <View style={styles.iconWrap}>
-          <Ionicons name="location" size={22} color="#fff" />
+          <Ionicons name="location" size={22} color="#009CA6" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>Điểm đón</Text>
@@ -33,7 +35,7 @@ export default function DetailBooking({ destination, pickup, selectedTime, selec
       {/* Điểm đến */}
       <View style={styles.row}>
         <View style={styles.iconWrap}>
-          <Ionicons name="flag" size={22} color="#fff" />
+          <Ionicons name="flag" size={22} color="#009CA6" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>Điểm đến</Text>
@@ -44,14 +46,14 @@ export default function DetailBooking({ destination, pickup, selectedTime, selec
       {/* Thời gian đón & Phương tiện */}
       <View style={[styles.row, { marginBottom: 0 }]}> 
         <View style={styles.iconWrap}>
-          <Ionicons name="time" size={22} color="#fff" />
+          <Ionicons name="time" size={22} color="#009CA6" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>Thời gian đón</Text>
           <Text style={styles.value}>{selectedTime === 'now' ? 'Ngay bây giờ' : 'Thời gian khác'}</Text>
         </View>
         <View style={styles.iconWrap}>
-          <FontAwesome5 name="car-side" size={20} color="#fff" />
+          <FontAwesome5 name="car-side" size={20} color="#009CA6" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.label}>Phương tiện</Text>
@@ -60,15 +62,13 @@ export default function DetailBooking({ destination, pickup, selectedTime, selec
       </View>
       {/* Giá ước tính */}
       <View style={styles.divider} />
-      <Text style={styles.priceLabel}>Giá ước tính</Text>
-      <Text style={styles.priceValue}>125,000 VND</Text>
-      {/* Nút xác nhận/chỉnh sửa */}
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]}>
+      <View style={styles.priceActionRow}>
+        <View>
+          <Text style={styles.priceLabel}>Giá ước tính</Text>
+          <Text style={styles.priceValue}>125,000 VND</Text>
+        </View>
+        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary, {flexShrink: 0, paddingHorizontal: 16, marginLeft: 35}]} onPress={onConfirm}> 
           <Text style={[styles.actionBtnText, styles.actionBtnTextPrimary]}>Xác nhận</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSecondary]}>
-          <Text style={[styles.actionBtnText, styles.actionBtnTextSecondary]}>Chỉnh sửa</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -77,7 +77,7 @@ export default function DetailBooking({ destination, pickup, selectedTime, selec
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FDFDFD',
     borderRadius: 16,
     padding: 18,
     marginTop: 6,
@@ -86,15 +86,15 @@ const styles = StyleSheet.create({
     marginRight: 0,
     maxWidth: '88%',
     alignSelf: 'flex-start',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00bfa5',
+    backgroundColor: '#009CA6',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     marginHorizontal: -18,
@@ -112,6 +112,9 @@ const styles = StyleSheet.create({
   editBtn: {
     padding: 4,
     borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
   },
   row: {
     flexDirection: 'row',
@@ -123,7 +126,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#0097a7',
+    backgroundColor: '#F4C95D',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#757575',
+    color: '#009CA6',
     fontWeight: 'bold',
     marginBottom: 2,
   },
@@ -150,27 +153,29 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#eee',
+    backgroundColor: '#b2dfdb',
     marginVertical: 10,
     borderRadius: 1,
   },
   priceLabel: {
     fontSize: 13,
-    color: '#757575',
+    color: '#F4C95D',
     fontWeight: 'bold',
     marginBottom: 2,
   },
   priceValue: {
     fontSize: 20,
-    color: '#222',
+    color: '#009CA6',
     fontWeight: 'bold',
     marginBottom: 2,
   },
-  actionRow: {
+  priceActionRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 14,
     marginLeft: 8,
-    gap: 10,
+    marginRight: 8,
   },
   actionBtn: {
     borderRadius: 8,
@@ -179,12 +184,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
+    flexDirection: 'row',
   },
   actionBtnPrimary: {
-    backgroundColor: '#009688',
+    backgroundColor: '#009CA6',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 2,
   },
   actionBtnSecondary: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
   },
   actionBtnText: {
     fontWeight: 'bold',
@@ -194,6 +206,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   actionBtnTextSecondary: {
-    color: '#009688',
+    color: '#009CA6',
   },
 });

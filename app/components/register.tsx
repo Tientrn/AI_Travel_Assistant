@@ -38,23 +38,33 @@ export default function Register() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', backgroundColor: '#FDFDFD' }} keyboardShouldPersistTaps="handled">
       <View style={styles.card}>
+        {/* Mô tả ngắn */}
+        <View style={{ alignItems: 'center', marginBottom: 12 }}>
+          <FontAwesome name="gift" size={32} color="#F4C95D" style={{ marginBottom: 4 }} />
+          <Text style={{ color: '#009CA6', fontWeight: 'bold', fontSize: 16, marginBottom: 2 }}>Đăng ký thành viên</Text>
+          <Text style={{ color: '#666', fontSize: 13, textAlign: 'center' }}>
+            Nhận ưu đãi độc quyền và quà tặng hấp dẫn khi đăng ký!
+          </Text>
+        </View>
         {/* Thông tin cơ bản */}
         <Text style={styles.sectionTitle}>Thông tin cơ bản</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: '#f5f5f5' }]}
+          style={[styles.input, { backgroundColor: '#FDFDFD', borderColor: '#009CA6' }]}
           value={name}
           onChangeText={setName}
           editable={true}
           placeholder="Họ và tên"
+          placeholderTextColor="#009CA6"
         />
         <TextInput
-          style={[styles.input, { backgroundColor: '#f5f5f5' }]}
+          style={[styles.input, { backgroundColor: '#FDFDFD', borderColor: '#009CA6' }]}
           value={phone}
           onChangeText={setPhone}
           editable={true}
           placeholder="Số điện thoại"
+          placeholderTextColor="#009CA6"
           keyboardType="phone-pad"
         />
 
@@ -63,21 +73,17 @@ export default function Register() {
         <Text style={styles.label}>Chọn phương thức nhận mã OTP</Text>
         <View style={styles.methodRow}>
           <TouchableOpacity
-            style={[styles.methodBtn, method === 'zalo' && styles.methodBtnActive]}
+            style={[styles.methodBtn, method === 'zalo' ? styles.methodBtnActive : styles.methodBtnInactive]}
             onPress={() => handleSelectMethod('zalo')}
             disabled={loading !== null}
           >
-            <FontAwesome name="comment" size={18} color={method === 'zalo' ? '#fff' : '#007AFF'} />
+            <FontAwesome name="comment" size={18} color={method === 'zalo' ? '#fff' : '#009CA6'} />
             <Text style={[styles.methodText, method === 'zalo' && { color: '#fff' }]}> Zalo</Text>
             {loading === 'zalo' && <ActivityIndicator size={18} color="#fff" style={{ marginLeft: 8 }} />}
             {sent === 'zalo' && <FontAwesome name="check-circle" size={18} color="#fff" style={{ marginLeft: 8 }} />}
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.methodBtn,
-              styles.methodBtnOutline,
-              method === 'whatsapp' && styles.methodBtnActiveWhatsapp
-            ]}
+            style={[styles.methodBtn, method === 'whatsapp' ? styles.methodBtnActiveWhatsapp : styles.methodBtnInactiveWhatsapp]}
             onPress={() => handleSelectMethod('whatsapp')}
             disabled={loading !== null}
           >
@@ -90,30 +96,47 @@ export default function Register() {
 
         {/* Nhập mã OTP */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Nhập mã OTP</Text>
-        <Text style={styles.label}>Chúng tôi đã gửi mã tới Zalo/WhatsApp</Text>
+        <Text style={styles.label}>Chúng tôi đã gửi mã tới {method === 'zalo' ? 'Zalo' : 'WhatsApp'}</Text>
         <View style={styles.otpRow}>
           {otp.map((v, idx) => (
             <TextInput
               key={idx}
-              ref={(ref) => {
-                otpRefs.current[idx] = ref;
-              }}
-              style={styles.otpInput}
+              ref={(ref) => { otpRefs.current[idx] = ref; }}
+              style={[
+                styles.otpInput,
+                v ? styles.otpInputFilled : null
+              ]}
               value={v}
               onChangeText={val => handleOtpChange(val, idx)}
               keyboardType="number-pad"
               maxLength={1}
+              placeholder="-"
+              placeholderTextColor="#B2DFDB"
+              onFocus={() => {
+                // force re-render for focus style
+                otpRefs.current[idx]?.setNativeProps({ style: styles.otpInputFocused });
+              }}
+              onBlur={() => {
+                otpRefs.current[idx]?.setNativeProps({ style: styles.otpInput });
+              }}
             />
           ))}
         </View>
-        <TouchableOpacity style={styles.confirmBtn} onPress={() => {
-          // Chuyển sang màn hình SurveyScreen
-          const { router } = require('expo-router');
-          router.push('/screens/SurveyScreen');
-        }}>
+        <TouchableOpacity
+          style={[styles.confirmBtn, otp.every(x => x) ? {} : { opacity: 0.5 }]}
+          onPress={() => {
+            if (!otp.every(x => x)) return;
+            const { router } = require('expo-router');
+            router.push('/screens/SurveyScreen');
+          }}
+          disabled={!otp.every(x => x)}
+        >
           <Text style={styles.confirmBtnText}>Xác nhận</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.resendBtn} disabled>
+        <TouchableOpacity
+          style={[styles.resendBtn, loading ? { opacity: 0.5 } : {}]}
+          disabled={!!loading}
+        >
           <Text style={styles.resendBtnText}>Gửi lại mã</Text>
         </TouchableOpacity>
       </View>
@@ -128,25 +151,27 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 18,
     padding: 20,
     width: '100%',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+    elevation: 6,
   },
   sectionTitle: {
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 16,
     marginBottom: 8,
-    color: '#009688',
+    color: '#009CA6',
+    letterSpacing: 0.2,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
     fontSize: 15,
     color: '#222',
+    backgroundColor: '#FDFDFD',
   },
   label: {
     fontSize: 13,
@@ -156,89 +181,100 @@ const styles = StyleSheet.create({
   methodRow: {
     flexDirection: 'row',
     marginBottom: 10,
-    gap: 10,
+    gap: 12,
   },
   methodBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: 0,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 12,
     justifyContent: 'center',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   methodBtnActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#009CA6',
+    borderColor: '#009CA6',
   },
-  methodBtnOutline: {
-    borderWidth: 1,
-    borderColor: '#25D366',
+  methodBtnInactive: {
     backgroundColor: '#fff',
+    borderColor: '#009CA6',
   },
-  methodBtnActiveOutline: {
+  methodBtnActiveWhatsapp: {
+    backgroundColor: '#25D366',
     borderColor: '#25D366',
-    backgroundColor: '#eafff3',
+  },
+  methodBtnInactiveWhatsapp: {
+    backgroundColor: '#fff',
+    borderColor: '#25D366',
   },
   methodText: {
     fontSize: 15,
     fontWeight: 'bold',
   },
-  sendBtn: {
-    backgroundColor: '#00b3b3',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  sendBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
   otpRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 12,
+    gap: 8,
   },
   otpInput: {
-    width: 40,
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
+    width: 44,
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
+    borderRadius: 10,
     textAlign: 'center',
-    fontSize: 20,
-    backgroundColor: '#f5f5f5',
-    color: '#222',
+    fontSize: 22,
+    backgroundColor: '#FDFDFD',
+    color: '#009CA6',
+    marginHorizontal: 2,
+  },
+  otpInputFilled: {
+    backgroundColor: '#B2DFDB',
+    color: '#009CA6',
+    borderColor: '#009CA6',
+  },
+  otpInputFocused: {
+    borderColor: '#F4C95D',
+    backgroundColor: '#fffbe6',
   },
   confirmBtn: {
-    backgroundColor: '#00b3b3',
-    borderRadius: 8,
-    paddingVertical: 12,
+    backgroundColor: '#009CA6',
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   confirmBtnText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    letterSpacing: 0.2,
   },
   resendBtn: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    backgroundColor: '#FDFDFD',
+    borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 8,
+    borderWidth: 1.2,
+    borderColor: '#F4C95D',
   },
   resendBtnText: {
-    color: '#00b3b3',
+    color: '#F4C95D',
     fontWeight: 'bold',
-    fontSize: 16,
-    opacity: 0.5,
-  },
-  methodBtnActiveWhatsapp: {
-    backgroundColor: '#25D366',
-    borderColor: '#25D366',
+    fontSize: 15,
+    opacity: 0.85,
   },
 }); 

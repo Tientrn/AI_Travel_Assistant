@@ -19,28 +19,28 @@ export default function BookingForm({ onConfirm }: BookingFormProps) {
   const [pickup, setPickup] = useState('Vị trí hiện tại');
 
   return (
-    <View style={styles.container}>
+    <View style={styles.card}>
       {/* Label: Điểm đến */}
-      <Text style={styles.label}>Điểm đến</Text>
+      <Text style={styles.sectionTitle}>Điểm đến</Text>
       <View style={styles.inputGroup}>
-        <Ionicons name="location-outline" size={18} color="#009688" style={styles.inputIcon} />
+        <Ionicons name="location-outline" size={18} color="#009CA6" style={styles.inputIcon} />
         <TextInput
           style={styles.input}
           placeholder="Nhập điểm đến"
-          placeholderTextColor="#b0b0b0"
+          placeholderTextColor="#b2dfdb"
           value={destination}
           onChangeText={setDestination}
           editable={true}
         />
       </View>
       {/* Label: Điểm đón */}
-      <Text style={styles.label}>Điểm đón</Text>
+      <Text style={styles.sectionTitle}>Điểm đón</Text>
       <View style={styles.inputGroup}>
-        <Ionicons name="location-outline" size={18} color="#009688" style={styles.inputIcon} />
+        <Ionicons name="location-outline" size={18} color="#009CA6" style={styles.inputIcon} />
         <TextInput
           style={styles.input}
           placeholder="Nhập điểm đón"
-          placeholderTextColor="#b0b0b0"
+          placeholderTextColor="#b2dfdb"
           value={pickup}
           onChangeText={setPickup}
           editable={true}
@@ -55,75 +55,75 @@ export default function BookingForm({ onConfirm }: BookingFormProps) {
             setPickup('Vị trí hiện tại');
           }}
         >
-          <Ionicons name="locate" size={18} color={selectedLocation === 'current' ? '#fff' : '#009688'} style={{ marginRight: 6 }} />
+          <Ionicons name="locate" size={18} color={selectedLocation === 'current' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
           <Text style={[styles.selectBtnText, selectedLocation === 'current' && { color: '#fff' }]}>Vị trí hiện tại</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.selectBtn, selectedLocation === 'custom' ? styles.selectBtnActive : styles.selectBtnInactive]}
           onPress={() => setSelectedLocation('custom')}
         >
-          <MaterialCommunityIcons name="map-marker-radius-outline" size={18} color={selectedLocation === 'custom' ? '#fff' : '#009688'} style={{ marginRight: 6 }} />
+          <MaterialCommunityIcons name="map-marker-radius-outline" size={18} color={selectedLocation === 'custom' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
           <Text style={[styles.selectBtnText, selectedLocation === 'custom' && { color: '#fff' }]}>Chọn vị trí</Text>
         </TouchableOpacity>
       </View>
       {/* Label: Thời gian đón */}
-      <Text style={styles.label}>Thời gian đón</Text>
+      <Text style={styles.sectionTitle}>Thời gian đón</Text>
       <View style={styles.row}>
         <TouchableOpacity
           style={[styles.selectBtn, selectedTime === 'now' ? styles.selectBtnActive : styles.selectBtnInactive]}
           onPress={() => setSelectedTime('now')}
         >
-          <Ionicons name="time-outline" size={18} color={selectedTime === 'now' ? '#fff' : '#009688'} style={{ marginRight: 6 }} />
+          <Ionicons name="time-outline" size={18} color={selectedTime === 'now' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
           <Text style={[styles.selectBtnText, selectedTime === 'now' && { color: '#fff' }]}>Ngay bây giờ</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.selectBtn, selectedTime === 'custom' ? styles.selectBtnActive : styles.selectBtnInactive]}
           onPress={() => setSelectedTime('custom')}
         >
-          <Ionicons name="calendar-outline" size={18} color={selectedTime === 'custom' ? '#fff' : '#009688'} style={{ marginRight: 6 }} />
+          <Ionicons name="calendar-outline" size={18} color={selectedTime === 'custom' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
           <Text style={[styles.selectBtnText, selectedTime === 'custom' && { color: '#fff' }]}>Chọn thời gian khác</Text>
         </TouchableOpacity>
       </View>
       {/* Label: Chọn loại xe */}
-      <Text style={styles.label}>Chọn loại xe</Text>
+      <Text style={styles.sectionTitle}>Chọn loại xe</Text>
       <View style={styles.carRow}>
         <TouchableOpacity
           style={[styles.carBtn, selectedCar === '4' ? styles.carBtnActive : styles.carBtnInactive]}
           onPress={() => setSelectedCar('4')}
         >
-          <FontAwesome5 name="car-side" size={20} color={selectedCar === '4' ? '#009688' : '#b0b0b0'} />
-          <Text style={[styles.carBtnTitle, selectedCar === '4' && { color: '#009688' }]}>4 chỗ</Text>
-          <Text style={[styles.carBtnDesc, selectedCar === '4' && { color: '#4dd0c6' }]}>Tiết kiệm</Text>
+          <FontAwesome5 name="car-side" size={20} color={selectedCar === '4' ? '#fff' : '#009CA6'} />
+          <Text style={[styles.carBtnTitle, selectedCar === '4' && { color: '#fff' }]}>4 chỗ</Text>
+          <Text style={[styles.carBtnDesc, selectedCar === '4' && { color: '#fff' }]}>Tiết kiệm</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.carBtn, selectedCar === '7' ? styles.carBtnActive : styles.carBtnInactive]}
           onPress={() => setSelectedCar('7')}
         >
-          <FontAwesome5 name="shuttle-van" size={20} color={selectedCar === '7' ? '#009688' : '#b0b0b0'} />
-          <Text style={[styles.carBtnTitle, selectedCar === '7' && { color: '#009688' }]}>7 chỗ</Text>
-          <Text style={[styles.carBtnDesc, selectedCar === '7' && { color: '#4dd0c6' }]}>Phù hợp gia đình</Text>
+          <FontAwesome5 name="shuttle-van" size={20} color={selectedCar === '7' ? '#fff' : '#009CA6'} />
+          <Text style={[styles.carBtnTitle, selectedCar === '7' && { color: '#fff' }]}>7 chỗ</Text>
+          <Text style={[styles.carBtnDesc, selectedCar === '7' && { color: '#fff' }]}>Phù hợp gia đình</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.carBtn, selectedCar === 'bike' ? styles.carBtnActive : styles.carBtnInactive]}
           onPress={() => setSelectedCar('bike')}
         >
-          <FontAwesome5 name="motorcycle" size={20} color={selectedCar === 'bike' ? '#009688' : '#b0b0b0'} />
-          <Text style={[styles.carBtnTitle, selectedCar === 'bike' && { color: '#009688' }]}>Xe máy</Text>
-          <Text style={[styles.carBtnDesc, selectedCar === 'bike' && { color: '#4dd0c6' }]}>Nhanh chóng</Text>
+          <FontAwesome5 name="motorcycle" size={20} color={selectedCar === 'bike' ? '#fff' : '#009CA6'} />
+          <Text style={[styles.carBtnTitle, selectedCar === 'bike' && { color: '#fff' }]}>Xe máy</Text>
+          <Text style={[styles.carBtnDesc, selectedCar === 'bike' && { color: '#fff' }]}>Nhanh chóng</Text>
         </TouchableOpacity>
       </View>
       {/* Box tổng kết */}
       <View style={styles.summaryBox}>
         <View style={styles.summaryRow}>
-          <Ionicons name="location-outline" size={16} color="#009688" style={{ marginRight: 6 }} />
+          <Ionicons name="location-outline" size={16} color="#009CA6" style={{ marginRight: 6 }} />
           <Text style={styles.summaryText} numberOfLines={1}>{destination}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Ionicons name="time-outline" size={16} color="#009688" style={{ marginRight: 6 }} />
-          <Text style={styles.summaryText}>Ngay bây giờ</Text>
+          <Ionicons name="time-outline" size={16} color="#009CA6" style={{ marginRight: 6 }} />
+          <Text style={styles.summaryText}>{selectedTime === 'now' ? 'Ngay bây giờ' : 'Thời gian khác'}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <FontAwesome5 name={selectedCar === 'bike' ? 'motorcycle' : selectedCar === '7' ? 'shuttle-van' : 'car-side'} size={16} color="#009688" style={{ marginRight: 6 }} />
+          <FontAwesome5 name={selectedCar === 'bike' ? 'motorcycle' : selectedCar === '7' ? 'shuttle-van' : 'car-side'} size={16} color="#009CA6" style={{ marginRight: 6 }} />
           <Text style={styles.summaryText}>{selectedCar === '4' ? '4 chỗ - tiết kiệm' : selectedCar === '7' ? '7 chỗ - phù hợp gia đình' : 'Xe máy - nhanh chóng'}</Text>
         </View>
       </View>
@@ -136,6 +136,7 @@ export default function BookingForm({ onConfirm }: BookingFormProps) {
           selectedTime,
           selectedCar,
         })}
+        activeOpacity={0.85}
       >
         <Text style={styles.confirmBtnText}>Xác nhận</Text>
       </TouchableOpacity>
@@ -144,36 +145,31 @@ export default function BookingForm({ onConfirm }: BookingFormProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     backgroundColor: '#fff',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    padding: 20,
     width: '100%',
-    maxWidth: '100%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    padding: 18,
-    paddingBottom: 24,
-    margin: 0,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+    elevation: 6,
   },
-  label: {
-    fontSize: 13,
-    color: '#757575',
+  sectionTitle: {
     fontWeight: 'bold',
-    marginBottom: 4,
-    marginTop: 8,
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#009CA6',
+    letterSpacing: 0.2,
   },
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: '#e0e0e0',
+    borderColor: '#b2dfdb',
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 12,
@@ -184,36 +180,44 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    color: '#b0b0b0',
+    color: '#222',
     backgroundColor: 'transparent',
   },
   row: {
     flexDirection: 'row',
     marginBottom: 12,
+    gap: 12,
   },
   selectBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1.5,
     borderColor: '#b2dfdb',
+    backgroundColor: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 0,
-    marginRight: 10,
     justifyContent: 'center',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   selectBtnActive: {
-    backgroundColor: '#009688',
-    borderColor: '#009688',
+    backgroundColor: '#009CA6',
+    borderColor: '#009CA6',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 2,
   },
   selectBtnInactive: {
     backgroundColor: '#fff',
     borderColor: '#b2dfdb',
   },
   selectBtnText: {
-    color: '#009688',
+    color: '#009CA6',
     fontWeight: 'bold',
     fontSize: 15,
   },
@@ -230,32 +234,36 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginRight: 8,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
+    borderColor: '#b2dfdb',
   },
   carBtnActive: {
-    backgroundColor: '#e0f7f4',
-    borderColor: '#009688',
+    backgroundColor: '#009CA6',
+    borderColor: '#009CA6',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 2,
   },
   carBtnInactive: {
     backgroundColor: '#fff',
-    borderColor: '#e0e0e0',
+    borderColor: '#b2dfdb',
   },
   carBtnTitle: {
     fontWeight: 'bold',
     fontSize: 15,
     marginTop: 6,
     marginBottom: 2,
-    color: '#222',
+    color: '#009CA6',
   },
   carBtnDesc: {
     fontSize: 12,
-    color: '#b0b0b0',
+    color: '#b2dfdb',
   },
   summaryBox: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FDFDFD',
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#e0e0e0',
+    borderColor: '#b2dfdb',
     padding: 14,
     marginBottom: 18,
     marginTop: 8,
@@ -272,15 +280,19 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   confirmBtn: {
-    backgroundColor: '#00bfa5',
+    backgroundColor: '#F4C95D',
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 18,
     width: '100%',
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 2,
   },
   confirmBtnText: {
-    color: '#fff',
+    color: '#009CA6',
     fontWeight: 'bold',
     fontSize: 18,
     letterSpacing: 0.5,

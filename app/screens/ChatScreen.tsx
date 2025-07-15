@@ -1,4 +1,5 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import { Animated, Keyboard, KeyboardAvoidingView, PanResponder, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Register from '../components/register';
@@ -57,110 +58,122 @@ export default function Home({ navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
-        enabled={!showRegister} // chỉ bật khi KHÔNG có popup
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={{ width: 24 }} />
-          <Text style={styles.headerTitle}>AI Travel Assistant</Text>
-          <TouchableOpacity>
-            <MaterialIcons name="more-vert" size={24} color="#757575" />
-          </TouchableOpacity>
-        </View>
-        {/* Chat content */}
-        <View style={styles.chatContent}>
-          <View style={styles.botMsgRow}>
-            <View style={styles.botMsgBubble}>
-              <Text style={styles.botMsgText}>
-                Xin chào! Tôi là trợ lý ảo AI, chào mừng bạn đến Phú Quốc 🏝️ Rất nhiều ưu đãi đang chờ bạn! Đăng ký thành viên ngay để nhận ưu đãi và quà tặng hấp dẫn 🎁
-              </Text>
-              <TouchableOpacity
-                style={styles.registerBtn}
-                onPress={() => {
-                  setShowUserReply(true);
-                  showRegisterSheet();
-                }}
-              >
-                <Text style={styles.registerBtnText}>Đăng ký ngay</Text>
-              </TouchableOpacity>
-            </View>
+    <LinearGradient
+      colors={["#009CA6", "#FDFDFD"]}
+      style={styles.gradientBg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+          enabled={!showRegister}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={{ width: 24 }} />
+            <Text style={styles.headerTitle}>AI Travel Assistant</Text>
+            <TouchableOpacity>
+              <MaterialIcons name="more-vert" size={24} color="#F4C95D" />
+            </TouchableOpacity>
           </View>
-          {showUserReply && (
-            <View style={styles.userMsgRow}>
-              <TouchableOpacity style={styles.registerBtn}>
-                <Text style={styles.registerBtnText}>Đăng ký ngay</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          {userReplies.map((msg, idx) => (
-            <View style={styles.userMsgRow} key={idx}>
-              <View style={styles.registerBtn}>
-                <Text style={styles.registerBtnText}>{msg}</Text>
+          {/* Chat content */}
+          <View style={styles.chatContent}>
+            <View style={styles.botMsgRow}>
+              <View style={styles.botMsgBubble}>
+                <Text style={styles.botMsgText}>
+                  Xin chào! Tôi là trợ lý ảo AI, chào mừng bạn đến Phú Quốc 🏝️ Rất nhiều ưu đãi đang chờ bạn! Đăng ký thành viên ngay để nhận ưu đãi và quà tặng hấp dẫn 🎁
+                </Text>
+                <TouchableOpacity
+                  style={styles.registerBtn}
+                  onPress={() => {
+                    setShowUserReply(true);
+                    showRegisterSheet();
+                  }}
+                >
+                  <Text style={styles.registerBtnText}>Đăng ký ngay</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          ))}
-        </View>
-        {/* Input */}
-        <View style={styles.inputRow}>
-          <Ionicons name="happy-outline" size={24} color="#757575" style={{ marginHorizontal: 8 }} />
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            placeholder="Ask anything..."
-            placeholderTextColor="#757575"
-            value={input}
-            onChangeText={setInput}
-            onSubmitEditing={handleSend}
-            returnKeyType="send"
-          />
-          <TouchableOpacity onPress={() => inputRef.current?.focus()}>
-            <Ionicons name="mic-outline" size={24} color="#757575" style={{ marginHorizontal: 8 }} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSend}>
-            <Ionicons name="send" size={24} color="#0097a7" />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-      {showRegister && (
-        <TouchableWithoutFeedback onPress={() => { hideRegisterSheet(); Keyboard.dismiss(); }}>
-          <View style={styles.registerOverlay}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={0} // Đặt về 0 để không bị hở
-              style={{ width: '100%', flex: 1, justifyContent: 'flex-end' }}
-              enabled={showRegister}
-            >
-              <ScrollView
-                contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
-                keyboardShouldPersistTaps="handled"
-              >
-                <Animated.View
-                  style={[
-                    styles.registerSheet,
-                    { transform: [{ translateY: pan }] },
-                  ]}
-                  {...panResponder.panHandlers}
-                >
-                  <Register />
-                </Animated.View>
-              </ScrollView>
-            </KeyboardAvoidingView>
+            {showUserReply && (
+              <View style={styles.userMsgRow}>
+                <TouchableOpacity style={styles.registerBtn}>
+                  <Text style={styles.registerBtnText}>Đăng ký ngay</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {userReplies.map((msg, idx) => (
+              <View style={styles.userMsgRow} key={idx}>
+                <View style={styles.registerBtn}>
+                  <Text style={styles.registerBtnText}>{msg}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-        </TouchableWithoutFeedback>
-      )}
-    </SafeAreaView>
+          {/* Input */}
+          <View style={styles.inputRow}>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Ionicons name="happy-outline" size={24} color="#009CA6" style={{ marginHorizontal: 8 }} />
+            </TouchableOpacity>
+            <TextInput
+              ref={inputRef}
+              style={styles.input}
+              placeholder="Ask anything..."
+              placeholderTextColor="#009CA6"
+              value={input}
+              onChangeText={setInput}
+              onSubmitEditing={handleSend}
+              returnKeyType="send"
+            />
+            <TouchableOpacity onPress={() => inputRef.current?.focus()}>
+              <Ionicons name="mic-outline" size={24} color="#009CA6" style={{ marginHorizontal: 8 }} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSend}>
+              <Ionicons name="send" size={24} color="#F4C95D" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+        {showRegister && (
+          <TouchableWithoutFeedback onPress={() => { hideRegisterSheet(); Keyboard.dismiss(); }}>
+            <View style={styles.registerOverlay}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={0} // Đặt về 0 để không bị hở
+                style={{ width: '100%', flex: 1, justifyContent: 'flex-end' }}
+                enabled={showRegister}
+              >
+                <ScrollView
+                  contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <Animated.View
+                    style={[
+                      styles.registerSheet,
+                      { transform: [{ translateY: pan }] },
+                    ]}
+                    {...panResponder.panHandlers}
+                  >
+                    <Register />
+                  </Animated.View>
+                </ScrollView>
+              </KeyboardAvoidingView>
+            </View>
+          </TouchableWithoutFeedback>
+        )}
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradientBg: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -169,13 +182,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#0097a7',
+    color: '#fff',
+    letterSpacing: 0.2,
   },
   chatContent: {
     flex: 1,
@@ -218,19 +232,27 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    padding: 8,
-    backgroundColor: '#fff',
+    borderTopWidth: 0,
+    padding: 10,
+    backgroundColor: '#FDFDFD',
+    borderRadius: 24,
+    margin: 10,
+    shadowColor: '#009CA6',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     fontSize: 15,
-    color: '#222',
+    color: '#009CA6',
+    borderWidth: 1.5,
+    borderColor: '#009CA6',
+    marginHorizontal: 8,
   },
   registerOverlay: {
     position: 'absolute',
