@@ -1,5 +1,5 @@
 import { FontAwesome } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function Register() {
@@ -10,11 +10,21 @@ export default function Register() {
   const [name, setName] = useState('Nguyễn Văn A');
   const [phone, setPhone] = useState('0987654321');
 
+  const otpRefs = useRef<Array<TextInput | null>>([]);
+
   const handleOtpChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[idx] = value;
     setOtp(newOtp);
+
+    if (value && idx < otp.length - 1) {
+      otpRefs.current[idx + 1]?.focus();
+    }
+    // Nếu xóa thì focus về trước (tùy ý)
+    if (!value && idx > 0) {
+      otpRefs.current[idx - 1]?.focus();
+    }
   };
 
   const handleSelectMethod = (m: 'zalo' | 'whatsapp') => {
@@ -85,6 +95,9 @@ export default function Register() {
           {otp.map((v, idx) => (
             <TextInput
               key={idx}
+              ref={(ref) => {
+                otpRefs.current[idx] = ref;
+              }}
               style={styles.otpInput}
               value={v}
               onChangeText={val => handleOtpChange(val, idx)}
@@ -93,7 +106,11 @@ export default function Register() {
             />
           ))}
         </View>
-        <TouchableOpacity style={styles.confirmBtn}>
+        <TouchableOpacity style={styles.confirmBtn} onPress={() => {
+          // Chuyển sang màn hình SurveyScreen
+          const { router } = require('expo-router');
+          router.push('/screens/SurveyScreen');
+        }}>
           <Text style={styles.confirmBtnText}>Xác nhận</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.resendBtn} disabled>

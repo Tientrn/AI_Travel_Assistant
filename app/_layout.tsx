@@ -12,6 +12,8 @@ export default function RootLayout() {
         <Stack.Screen name="screens/ladypage1" options={{ headerShown: false }} />
         <Stack.Screen name="screens/ladypage2" options={{ headerShown: false }} />
         <Stack.Screen name="screens/ChatScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="screens/SurveyScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="screens/HomeScreen" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </>

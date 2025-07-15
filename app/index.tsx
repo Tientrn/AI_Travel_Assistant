@@ -1,9 +1,21 @@
+import { useFonts } from 'expo-font'; // Thêm dòng này
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function WelcomeScreen({ navigation }: any) {
   const router = useRouter();
+
+  // Load font
+  const [fontsLoaded] = useFonts({
+    'JimNightshade-Regular': require('./assets/fonts/JimNightshade-Regular.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    // Nếu dùng Expo SDK < 49, dùng AppLoading, còn không thì return null hoặc spinner
+    return null;
+  }
+
   return (
     <ImageBackground
       source={require('./assets/images/welcome.jpg')}
