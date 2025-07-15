@@ -84,7 +84,7 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color="#F4C95D" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>AI Travel Assistant</Text>
             <TouchableOpacity>

@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Animated, Image, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import TripInfoCard from '../components/TripInfoCard';
 import WeatherCard from '../components/WeatherCard';
 
 type Message =
@@ -19,6 +20,7 @@ export default function ChatwithDriver() {
   const [showMapModal, setShowMapModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [showWeatherCard, setShowWeatherCard] = useState(false);
+  const [showTripInfoCard, setShowTripInfoCard] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, type: 'map', image: require('../assets/images/map.jpg') },
     { id: 2, type: 'driver', driver: { name: 'Nguyễn Văn A', rating: 4.9, reviews: 3124, distance: 'Còn 300 mét.' } },
@@ -26,18 +28,8 @@ export default function ChatwithDriver() {
     { id: 4, type: 'actions' },
   ]);
 
-  const handleSend = () => {
-    if (input.trim() !== '') {
-      setInput('');
-      setMessages(prev => [...prev, { id: Date.now(), type: 'text', text: input.trim(), sender: 'user' }]);
-    }
-  };
-
-  const handleZoomMap = () => {
-    setShowMapModal(true);
-  };
-
   const [weatherAnim] = useState(new Animated.Value(0));
+  const [tripInfoAnim] = useState(new Animated.Value(0));
 
   React.useEffect(() => {
     if (showWeatherCard) {
@@ -54,6 +46,33 @@ export default function ChatwithDriver() {
       }).start();
     }
   }, [showWeatherCard]);
+
+  React.useEffect(() => {
+    if (showTripInfoCard) {
+      Animated.timing(tripInfoAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(tripInfoAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showTripInfoCard]);
+
+  const handleSend = () => {
+    if (input.trim() !== '') {
+      setInput('');
+      setMessages(prev => [...prev, { id: Date.now(), type: 'text', text: input.trim(), sender: 'user' }]);
+    }
+  };
+
+  const handleZoomMap = () => {
+    setShowMapModal(true);
+  };
 
   return (
     <LinearGradient
@@ -73,7 +92,7 @@ export default function ChatwithDriver() {
           style={{ padding: 8, marginLeft: -8 }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color="#F4C95D" />
             </TouchableOpacity>
          
           <Text style={styles.headerTitle}>Chat với tài xế</Text>
@@ -136,6 +155,7 @@ export default function ChatwithDriver() {
                 onPress={() => {
                   setSelectedAction('weather');
                   setShowWeatherCard(true);
+                  setShowTripInfoCard(false);
                 }}
               >
                 <Ionicons name="cloud-outline" size={18} color={selectedAction === 'weather' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
@@ -143,7 +163,11 @@ export default function ChatwithDriver() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.actionBtnCol, selectedAction === 'contact' && styles.actionBtnSelected]}
-                onPress={() => setSelectedAction('contact')}
+                onPress={() => {
+                  setSelectedAction('contact');
+                  setShowTripInfoCard(true);
+                  setShowWeatherCard(false);
+                }}
               >
                 <Ionicons name="call" size={18} color={selectedAction === 'contact' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
                 <Text style={[styles.actionBtnText, selectedAction === 'contact' && styles.actionBtnTextSelected]}>Liên hệ tài xế</Text>
@@ -204,6 +228,26 @@ export default function ChatwithDriver() {
               <Ionicons name="send" size={24} color="#F4C95D" />
             </TouchableOpacity>
           </View>
+          {/* Nút kết thúc chuyến đi */}
+          <TouchableOpacity
+            style={{
+              marginHorizontal: 16,
+              marginBottom: 16,
+              marginTop: 0,
+              backgroundColor: '#009CA6',
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#009CA6',
+              shadowOpacity: 0.10,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+            onPress={() => router.push('/screens/TripFeedbackScreen')}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Kết thúc chuyến đi</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
         {showWeatherCard && (
           <Pressable
@@ -237,6 +281,41 @@ export default function ChatwithDriver() {
               }}
             >
               <WeatherCard onPressDetail={() => setShowWeatherCard(false)} />
+            </Animated.View>
+          </Pressable>
+        )}
+        {showTripInfoCard && (
+          <Pressable
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              zIndex: 99,
+              backgroundColor: 'rgba(0,0,0,0.15)',
+              justifyContent: 'flex-end',
+            }}
+            onPress={() => setShowTripInfoCard(false)}
+          >
+            <Animated.View
+              pointerEvents="box-none"
+              style={{
+                left: 0,
+                right: 0,
+                bottom: 0,
+                position: 'absolute',
+                transform: [{
+                  translateY: tripInfoAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [400, 0],
+                  })
+                }],
+                opacity: tripInfoAnim,
+                zIndex: 100,
+              }}
+            >
+              <TripInfoCard />
             </Animated.View>
           </Pressable>
         )}
