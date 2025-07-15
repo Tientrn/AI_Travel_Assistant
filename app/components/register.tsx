@@ -126,8 +126,8 @@ export default function Register() {
           style={[styles.confirmBtn, otp.every(x => x) ? {} : { opacity: 0.5 }]}
           onPress={() => {
             if (!otp.every(x => x)) return;
-            const { router } = require('expo-router');
-            router.push('/screens/SurveyScreen');
+          const { router } = require('expo-router');
+          router.push('/screens/SurveyScreen');
           }}
           disabled={!otp.every(x => x)}
         >

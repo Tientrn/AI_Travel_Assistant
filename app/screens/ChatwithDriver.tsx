@@ -2,7 +2,15 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import WeatherCard from '../components/WeatherCard';
+
+type Message =
+  | { id: number; type: 'text'; text: string; sender: 'user' }
+  | { id: number; type: 'map'; image: any }
+  | { id: number; type: 'driver'; driver: { name: string; rating: number; reviews: number; distance: string } }
+  | { id: number; type: 'status'; status: string; eta: string }
+  | { id: number; type: 'actions' }
 
 export default function ChatwithDriver() {
   const router = useRouter();
@@ -10,16 +18,42 @@ export default function ChatwithDriver() {
   const inputRef = useRef<TextInput>(null);
   const [showMapModal, setShowMapModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [showWeatherCard, setShowWeatherCard] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: 1, type: 'map', image: require('../assets/images/map.jpg') },
+    { id: 2, type: 'driver', driver: { name: 'Nguyễn Văn A', rating: 4.9, reviews: 3124, distance: 'Còn 300 mét.' } },
+    { id: 3, type: 'status', status: 'Xe của bạn đang trên đường đến!', eta: '3 phút' },
+    { id: 4, type: 'actions' },
+  ]);
 
   const handleSend = () => {
     if (input.trim() !== '') {
       setInput('');
+      setMessages(prev => [...prev, { id: Date.now(), type: 'text', text: input.trim(), sender: 'user' }]);
     }
   };
 
   const handleZoomMap = () => {
     setShowMapModal(true);
   };
+
+  const [weatherAnim] = useState(new Animated.Value(0));
+
+  React.useEffect(() => {
+    if (showWeatherCard) {
+      Animated.timing(weatherAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(weatherAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showWeatherCard]);
 
   return (
     <LinearGradient
@@ -42,13 +76,14 @@ export default function ChatwithDriver() {
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
          
-          <Text style={styles.headerTitle}>AI Travel Assistant</Text>
+          <Text style={styles.headerTitle}>Chat với tài xế</Text>
           <TouchableOpacity>
             <MaterialIcons name="more-vert" size={24} color="#F4C95D" />
           </TouchableOpacity>
         </View>
         {/* Khu vực trạng thái xe và tài xế */}
-        <View style={styles.statusWrap}>
+        
+        <ScrollView style={styles.statusWrap}>
           {/* Bản đồ mô phỏng */}
           <View style={styles.mapSection}>
             <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.85} onPress={handleZoomMap}>
@@ -98,7 +133,10 @@ export default function ChatwithDriver() {
             <View style={styles.actionRow}>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.actionBtnCol, selectedAction === 'weather' && styles.actionBtnSelected]}
-                onPress={() => setSelectedAction('weather')}
+                onPress={() => {
+                  setSelectedAction('weather');
+                  setShowWeatherCard(true);
+                }}
               >
                 <Ionicons name="cloud-outline" size={18} color={selectedAction === 'weather' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
                 <Text style={[styles.actionBtnText, selectedAction === 'weather' && styles.actionBtnTextSelected]}>Thời tiết hôm nay</Text>
@@ -126,7 +164,7 @@ export default function ChatwithDriver() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </ScrollView>
         {/* Modal phóng to ảnh bản đồ */}
         <Modal visible={showMapModal} transparent animationType="fade">
           <Pressable style={styles.modalOverlay} onPress={() => setShowMapModal(false)}>
@@ -167,6 +205,41 @@ export default function ChatwithDriver() {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
+        {showWeatherCard && (
+          <Pressable
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              zIndex: 99,
+              backgroundColor: 'rgba(0,0,0,0.15)', // nền mờ nhẹ
+              justifyContent: 'flex-end',
+            }}
+            onPress={() => setShowWeatherCard(false)}
+          >
+            <Animated.View
+              pointerEvents="box-none"
+              style={{
+                left: 0,
+                right: 0,
+                bottom: 0,
+                position: 'absolute',
+                transform: [{
+                  translateY: weatherAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [400, 0],
+                  })
+                }],
+                opacity: weatherAnim,
+                zIndex: 100,
+              }}
+            >
+              <WeatherCard onPressDetail={() => setShowWeatherCard(false)} />
+            </Animated.View>
+          </Pressable>
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
