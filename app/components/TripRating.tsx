@@ -34,7 +34,7 @@ const paymentMethods = [
   { icon: <FontAwesome name="credit-card" size={18} color="#00b6b6" />, label: 'Thẻ tín dụng' },
 ];
 
-export default function TripRating() {
+export default function TripRating({ onSubmit }: { onSubmit?: () => void }) {
   const router = useRouter();
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [selectedPoints, setSelectedPoints] = useState<number[]>([]);
@@ -48,9 +48,9 @@ export default function TripRating() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F8FAFB' }}>
+    <View >
       {/* ĐÃ BỎ HEADER Ở ĐÂY */}
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{  paddingBottom: 32 }}>
         {/* Driver Card */}
         <View style={styles.driverCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -185,7 +185,7 @@ export default function TripRating() {
           <TouchableOpacity style={styles.skipBtn}>
             <Text style={{ color: '#00b6b6', fontWeight: 'bold' }}>Bỏ qua</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.submitBtn}>
+          <TouchableOpacity style={styles.submitBtn} onPress={onSubmit}>
             <Ionicons name="send" size={18} color="#fff" style={{ marginRight: 6 }} />
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Gửi đánh giá</Text>
           </TouchableOpacity>
