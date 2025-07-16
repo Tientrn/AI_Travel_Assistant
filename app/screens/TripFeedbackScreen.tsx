@@ -2,7 +2,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Animated, Dimensions, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import TripRating from '../components/TripRating';
 
 
@@ -10,8 +10,9 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function TripFeedbackScreen() {
   const router = useRouter();
-  const [feedbackSent, setFeedbackSent] = useState(false);
-  const [showFeedbackBtns, setShowFeedbackBtns] = useState(true);
+  // Xóa state feedbackSent, showFeedbackBtns nếu không cần nữa
+  // const [feedbackSent, setFeedbackSent] = useState(false);
+  // const [showFeedbackBtns, setShowFeedbackBtns] = useState(true);
   const [messages, setMessages] = useState([
     { type: 'bot', text: 'Và... bạn đã đến nơi rồi!\nChúng tôi hy vọng chuyến đi vừa qua đã mang đến cho bạn những kỷ niệm thật khó quên. ✨' },
     { type: 'bot', text: 'Chúng tôi rất muốn biết chuyến đi của bạn thế nào! 😁\nChia sẻ trải nghiệm để giúp chúng tôi phục vụ tốt hơn nhé!' },
@@ -24,6 +25,7 @@ export default function TripFeedbackScreen() {
   const inputRef = useRef<TextInput>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const [showTripRating, setShowTripRating] = useState(false);
+  const tripRatingAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   React.useEffect(() => {
     if (showRegister) {
@@ -47,6 +49,18 @@ export default function TripFeedbackScreen() {
     }
   }, [messages, userMessages]);
 
+  React.useEffect(() => {
+    if (showTripRating) {
+      Animated.timing(tripRatingAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      tripRatingAnim.setValue(SCREEN_HEIGHT);
+    }
+  }, [showTripRating]);
+
   const handleSend = () => {
     if (input.trim() !== '') {
       setUserMessages(prev => [...prev, { type: 'user', text: input.trim() }]);
@@ -54,16 +68,23 @@ export default function TripFeedbackScreen() {
     }
   };
 
-  const handleFeedback = () => {
-    setFeedbackSent(true);
-    setShowFeedbackBtns(false);
-    setMessages(prev => ([
+  // Thay đổi handleFeedback để nhận tham số action
+  const handleFeedback = (action: 'rate' | 'skip') => {
+    setUserMessages(prev => [...prev, { type: 'user', text: action === 'rate' ? 'Đánh giá' : 'Bỏ qua' }]);
+    if (action === 'rate') {
+      setShowTripRating(true);
+    } else {
+      setShowTripRating(false);
+    }
+  };
+
+  // Hàm xử lý khi gửi đánh giá xong
+  const handleSubmitRating = () => {
+    setShowTripRating(false);
+    setUserMessages(prev => [
       ...prev,
-      { type: 'bot', text: '🎉 Cảm ơn bạn đã phản hồi!\nHẹn gặp lại bạn trong hành trình tiếp theo!✈️🌏' },
-      { type: 'bot', text: 'Đang ấp ủ chuyến đi tiếp theo?\nCùng nhau làm cho hành trình sắp tới thêm phần rực rỡ nhé!✈️🌞' },
-      { type: 'bot', text: 'Bạn muốn đánh giá chi tiết chuyến đi? Hãy gửi đánh giá bên dưới nhé!' }, // Thêm tin nhắn này
-    ]));
-    setShowTripRating(true); // Hiện TripRatingScreen
+      { type: 'bot', text: '🎉 Cảm ơn bạn đã đánh giá! Chúc bạn một ngày tuyệt vời!' }
+    ]);
   };
 
   return (
@@ -89,56 +110,148 @@ export default function TripFeedbackScreen() {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
           style={{ flex: 1 }}
         >
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            {[...messages, ...userMessages].map((msg, idx) => {
-              if (msg.type === 'bot') {
-                return (
-                  <View key={idx} style={styles.botMsgRow}>
-                    <View style={styles.botMsgBubble}>
-                      <Text style={styles.botMsgText}>{msg.text}</Text>
+          {showTripRating ? (
+            <Pressable style={{ flex: 1 }} onPress={() => setShowTripRating(false)}>
+              <ScrollView
+                ref={scrollViewRef}
+                contentContainerStyle={{
+                  padding: 16,
+                  paddingBottom: SCREEN_HEIGHT * 0.5 + 32,
+                  flexGrow: 1
+                }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {[...messages, ...userMessages].map((msg, idx) => {
+                  if (msg.type === 'bot') {
+                    return (
+                      <View key={idx} style={styles.botMsgRow}>
+                        <View style={styles.botMsgBubble}>
+                          <Text style={styles.botMsgText}>{msg.text}</Text>
+                        </View>
+                      </View>
+                    );
+                  }
+                  if (msg.type === 'user') {
+                    return (
+                      <View key={idx} style={styles.userMsgRow}>
+                        <View style={styles.userMsgBubble}>
+                          <Text style={styles.userMsgText}>{msg.text}</Text>
+                        </View>
+                      </View>
+                    );
+                  }
+                  if (msg.type === 'bot_action') {
+                    if (msg.action === 'go_home') {
+                      return (
+                        <View key={idx} style={styles.botMsgRow}>
+                          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                            <TouchableOpacity style={styles.feedbackBtn} onPress={() => router.replace('/screens/HomeScreen')}>
+                              <Ionicons name="home" size={18} color="#fff" style={{ marginRight: 6 }} />
+                              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Về trang chủ</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      );
+                    } else {
+                      // Mặc định: hai nút đánh giá/bỏ qua
+                      return (
+                        <View key={idx} style={styles.botMsgRow}>
+                          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                            <TouchableOpacity style={styles.feedbackBtn} onPress={() => handleFeedback('rate')}>
+                              <Ionicons name="happy-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+                              <Text style={{ color: '#fff', fontWeight: 'bold' }}> Đánh giá</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.skipBtn} onPress={() => handleFeedback('skip')}>
+                              <Text style={{ color: '#009CA6', fontWeight: 'bold' }}>Bỏ qua</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      );
+                    }
+                  }
+                  return null;
+                })}
+              </ScrollView>
+              {showTripRating && (
+                <Animated.View
+                  pointerEvents="box-none"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: SCREEN_HEIGHT * 0.5,
+                    maxHeight: SCREEN_HEIGHT * 0.6,
+                    transform: [{ translateY: tripRatingAnim }],
+                    zIndex: 10,
+                    backgroundColor: '#fff',
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    padding: 0,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.1,
+                    shadowRadius: 12,
+                    elevation: 8,
+                    overflow: 'hidden',
+                  }}
+                  onStartShouldSetResponder={() => true}
+                  onResponderStart={e => e.stopPropagation && e.stopPropagation()}
+                >
+                  <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={true}>
+                    <TripRating onSubmit={handleSubmitRating} />
+                  </ScrollView>
+                </Animated.View>
+              )}
+            </Pressable>
+          ) : (
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={{
+                padding: 16,
+                paddingBottom: 32,
+                flexGrow: 1
+              }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {[...messages, ...userMessages].map((msg, idx) => {
+                if (msg.type === 'bot') {
+                  return (
+                    <View key={idx} style={styles.botMsgRow}>
+                      <View style={styles.botMsgBubble}>
+                        <Text style={styles.botMsgText}>{msg.text}</Text>
+                      </View>
                     </View>
-                  </View>
-                );
-              }
-              if (msg.type === 'user') {
-                return (
-                  <View key={idx} style={styles.userMsgRow}>
-                    <View style={styles.userMsgBubble}>
-                      <Text style={styles.userMsgText}>{msg.text}</Text>
+                  );
+                }
+                if (msg.type === 'user') {
+                  return (
+                    <View key={idx} style={styles.userMsgRow}>
+                      <View style={styles.userMsgBubble}>
+                        <Text style={styles.userMsgText}>{msg.text}</Text>
+                      </View>
                     </View>
-                  </View>
-                );
-              }
-              if (msg.type === 'bot_action') {
-                return (
-                  <View key={idx} style={styles.botMsgRow}>
-                    {showFeedbackBtns && !feedbackSent && (
+                  );
+                }
+                if (msg.type === 'bot_action') {
+                  return (
+                    <View key={idx} style={styles.botMsgRow}>
+                      {/* Luôn hiển thị hai nút */}
                       <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-                        <TouchableOpacity style={styles.feedbackBtn} onPress={handleFeedback}>
+                        <TouchableOpacity style={styles.feedbackBtn} onPress={() => handleFeedback('rate')}>
                           <Ionicons name="happy-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
-                          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Gửi đánh giá</Text>
+                          <Text style={{ color: '#fff', fontWeight: 'bold' }}> Đánh giá</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.skipBtn} onPress={handleFeedback}>
+                        <TouchableOpacity style={styles.skipBtn} onPress={() => handleFeedback('skip')}>
                           <Text style={{ color: '#009CA6', fontWeight: 'bold' }}>Bỏ qua</Text>
                         </TouchableOpacity>
                       </View>
-                    )}
-                  </View>
-                );
-              }
-              return null;
-            })}
-            {/* Hiện TripRatingScreen nếu showTripRating = true */}
-            {showTripRating && (
-              <View style={{ marginTop: 24 }}>
-                <TripRating />
-              </View>
-            )}
-          </ScrollView>
+                    </View>
+                  );
+                }
+                return null;
+              })}
+            </ScrollView>
+          )}
           {/* Thanh nhập liệu */}
           <View style={styles.inputRow}>
             <TouchableOpacity activeOpacity={0.7}>
