@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<any[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   const [selectedCarDetail, setSelectedCarDetail] = useState<any | null>(null);
+  const [pendingCar, setPendingCar] = useState<any | null>(null); // thêm state này
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -87,6 +88,37 @@ export default function HomeScreen() {
       setMessages((prev) => [...prev, { type: "user", text: input.trim() }]);
       setInput("");
     }
+  };
+
+  // Xử lý chọn xe
+  const handleSelectCar = (car: any) => {
+    setSelectedCarDetail(null); // đóng modal chi tiết xe
+    setPendingCar(car); // lưu xe đang chọn
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "car_confirm",
+        car,
+      },
+    ]);
+  };
+
+  // Xử lý xác nhận chọn xe
+  const handleConfirmCar = () => {
+    setPendingCar(null);
+    router.push("/screens/CarRentalScreen");
+  };
+
+  // Xử lý huỷ chọn xe
+  const handleCancelCar = () => {
+    setPendingCar(null);
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "system",
+        text: "Bạn đã huỷ chọn xe.",
+      },
+    ]);
   };
 
   return (
@@ -481,6 +513,41 @@ export default function HomeScreen() {
                   </View>
                 );
               }
+              if (msg.type === "car_confirm") {
+                return (
+                  <View key={idx} style={[styles.systemMsg, { marginBottom: 16 }]}>
+                    <Text style={styles.systemMsgText}>
+                      Bạn đã chọn xe <Text style={{ fontWeight: "bold", color: "#009CA6" }}>{msg.car?.name}</Text>.{"\n"}
+                      Xác nhận đặt xe này?
+                    </Text>
+                    <View style={{ flexDirection: "row", marginTop: 10, gap: 12 }}>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#4CAF50",
+                          borderRadius: 8,
+                          paddingVertical: 10,
+                          paddingHorizontal: 18,
+                          marginRight: 8,
+                        }}
+                        onPress={handleConfirmCar}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>Xác nhận</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#F44336",
+                          borderRadius: 8,
+                          paddingVertical: 10,
+                          paddingHorizontal: 18,
+                        }}
+                        onPress={handleCancelCar}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "bold" }}>Huỷ</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              }
               return null;
             })}
           </ScrollView>
@@ -548,6 +615,7 @@ export default function HomeScreen() {
           <CarDetailModal
             car={selectedCarDetail}
             onClose={() => setSelectedCarDetail(null)}
+            onSelectCar={handleSelectCar} // truyền prop này
           />
         )}
       </SafeAreaView>

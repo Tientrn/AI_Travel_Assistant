@@ -34,9 +34,11 @@ const mockLocation = "Huyện Phú Quốc, Kiên Giang";
 const CarDetailModal = ({
   car,
   onClose,
+  onSelectCar, // thêm prop này
 }: {
   car: any;
   onClose: () => void;
+  onSelectCar?: (car: any) => void; // thêm type
 }) => {
   return (
     <View style={styles.overlay}>
@@ -272,6 +274,21 @@ const CarDetailModal = ({
               An tâm thuê xe, không lo bị huỷ chuyến với chính sách huỷ chuyến
               của AI Drive.
             </Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#009CA6",
+                borderRadius: 8,
+                paddingVertical: 12,
+                alignItems: "center",
+                marginTop: 18,
+                marginBottom: 0,
+              }}
+              onPress={() => onSelectCar && onSelectCar(car)}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+                Chọn xe này
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.reportBtn}>
               <Text style={{ color: "#F44336", fontWeight: "bold" }}>
                 Báo cáo xe này

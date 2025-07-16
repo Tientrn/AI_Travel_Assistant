@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import HeaderBar from '../components/HeaderBar';
 import RentalDetailsModal from '../components/RentalDetailsModal';
@@ -20,6 +20,12 @@ const CarRentalScreen = () => {
   const [input, setInput] = useState('');
   const inputRef = useRef<TextInput>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [details, setDetails] = useState<any>(null);
+  const [messages, setMessages] = useState<
+  { type: 'user' | 'system'; text: string }[]>([
+  
+]);
 
   const handleSend = () => {
   const trimmed = input.trim();
@@ -42,12 +48,6 @@ const CarRentalScreen = () => {
 
           {/* System message */}
           <ScrollView contentContainerStyle={styles.content}>
-            <View style={styles.systemMsg}>
-              <Text style={styles.systemMsgText}>
-                Đã ghi nhận yêu cầu thuê xe của bạn!{"\n"}
-                Trước khi tiếp tục, hãy cung cấp thông tin cá nhân để xác nhận giao dịch 🚗
-              </Text>
-            </View>
 
             <View style={styles.detailsCard}>
             <View style={styles.cardHeader}>
@@ -86,13 +86,70 @@ const CarRentalScreen = () => {
             </View>
 
             <View style={styles.actionButtons}>
-              <TouchableOpacity style={[styles.button, styles.confirmButton]}>
+              <TouchableOpacity
+                style={[styles.button, styles.confirmButton]}
+                onPress={() => {
+                  setMessages((prev) => [
+                    ...prev,
+                    { type: 'user', text: 'Xác nhận' },
+                    {
+                      type: 'system',
+                      text:
+                        'Đã ghi nhận yêu cầu thuê xe của bạn!\n\nTrước khi tiếp tục, bạn cần xác minh thông tin cá nhân.\nHãy gửi:\n- Họ tên\n- Số điện thoại\n- Ảnh CCCD / CMND\n- Ảnh bằng lái xe',
+                    },
+                  ]);
+                }}
+              >
                 <Text style={styles.buttonText}>Xác nhận</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, styles.editButton]}>
+              <TouchableOpacity
+                style={[styles.button, styles.editButton]}
+                onPress={() => {
+                  setEditMode(true);
+                  setShowDetail(true);
+                }}
+              >
                 <Text style={styles.buttonText}>Chỉnh sửa</Text>
               </TouchableOpacity>
             </View>
+
+            {messages.map((msg, idx) =>
+  msg.type === 'system' ? (
+    <View key={idx} style={styles.systemMsg}>
+      <Text style={styles.systemMsgText}>{msg.text}</Text>
+    </View>
+  ) : (
+    <View
+      key={idx}
+      style={{
+        alignSelf: 'flex-end',
+        backgroundColor: '#009CA6',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+        maxWidth: '80%',
+      }}
+    >
+      <Text style={{ color: '#fff', fontSize: 15 }}>{msg.text}</Text>
+    </View>
+  )
+)}
+
+{messages.some(
+  (msg) =>
+    msg.type === 'system' &&
+    msg.text.includes('xác minh thông tin')
+) && (
+  <TouchableOpacity
+    style={styles.verifyButton}
+    onPress={() => {
+      // TODO: Mở modal xác minh thông tin ở đây (sẽ làm sau)
+    }}
+  >
+    <Text style={styles.verifyButtonText}>Xác minh thông tin</Text>
+  </TouchableOpacity>
+)}
+
           </ScrollView>
 
           <View style={styles.inputRow}>
@@ -125,7 +182,20 @@ const CarRentalScreen = () => {
     <Ionicons name="send" size={24} color="#F4C95D" />
   </TouchableOpacity>
 </View>
-  <RentalDetailsModal visible={showDetail} onClose={() => setShowDetail(false)} />
+  <RentalDetailsModal
+            visible={showDetail}
+            onClose={() => {
+              setShowDetail(false);
+              setEditMode(false);
+            }}
+            editable={editMode}
+            details={details}
+            onSave={(newDetails) => {
+              setDetails(newDetails);
+              setShowDetail(false);
+              setEditMode(false);
+            }}
+          />
 
         </KeyboardAvoidingView>
       </SafeAreaView>
