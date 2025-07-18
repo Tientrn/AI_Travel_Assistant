@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -11,114 +12,201 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import BookingForm from "../components/bookingform";
 import CarDetailModal from "../components/CarDetailModal";
 import CarRentList from "../components/CarRentList";
 import DetailBooking from "../components/Detailbooking";
 
-type BookingDetailData = {
-  destination: string;
-  pickup: string;
-  selectedTime: string;
-  selectedCar: string;
-};
+const AI_AVATAR = require("../assets/images/welcome.jpg"); // Sử dụng ảnh AI hoặc icon
+
+const QUICK_SUGGESTIONS = [
+  { label: "Đặt xe đến sân bay", intent: "book_car" },
+  { label: "Thuê xe tự lái", intent: "rent_car" },
+  { label: "Xem thời tiết", intent: "weather" },
+  { label: "Gợi ý địa điểm ăn uống", intent: "suggest_food" },
+];
+
+function fakeSpeechToText(): Promise<string> {
+  // Giả lập chuyển giọng nói thành text
+  return new Promise((resolve) => {
+    setTimeout(() => resolve("Tôi muốn thuê xe 7 chỗ ngày mai"), 1500);
+  });
+}
+
+function detectIntent(text: string): { intent: string } {
+  // Giả lập phân tích ý định từ text
+  const t = text.toLowerCase();
+  if (t.includes("đặt xe")) return { intent: "book_car" };
+  if (t.includes("thuê xe")) return { intent: "rent_car" };
+  if (t.includes("thời tiết")) return { intent: "weather" };
+  if (t.includes("ăn uống") || t.includes("nhà hàng")) return { intent: "suggest_food" };
+  return { intent: "chat" };
+}
 
 export default function HomeScreen() {
   const [input, setInput] = useState("");
   const inputRef = useRef<TextInput>(null);
   const router = useRouter();
-  const [selectedOption, setSelectedOption] = useState<
-    "datxe" | "thuexe" | null
-  >(null);
+  const [messages, setMessages] = useState([
+    {
+      type: "ai",
+      text:
+        "Xin chào! Mình là trợ lý AI du lịch của bạn. Bạn muốn đặt xe, thuê xe, hỏi thời tiết hay cần gợi ý gì cho chuyến đi? Hãy nhập hoặc nói điều bạn muốn nhé!",
+    },
+  ]);
+  const [isAITyping, setIsAITyping] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [showCarList, setShowCarList] = useState(false);
+  const [selectedCarDetail, setSelectedCarDetail] = useState(null);
+  const [pendingCar, setPendingCar] = useState(null);
+  const [showDetailBooking, setShowDetailBooking] = useState(false);
+  const [bookingData, setBookingData] = useState<any | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const [selectedCarDetail, setSelectedCarDetail] = useState<any | null>(null);
-  const [pendingCar, setPendingCar] = useState<any | null>(null); // thêm state này
+  const [quickSuggestions, setQuickSuggestions] = useState(QUICK_SUGGESTIONS);
 
   useEffect(() => {
     if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
     }
-  }, [messages]);
+  }, [messages, showCarList, showBooking, showDetailBooking]);
 
+  // Xử lý gửi tin nhắn (text hoặc voice)
+  const handleSend = async (text?: string) => {
+    const userText = text || input.trim();
+    if (!userText) return;
+    setMessages((prev: any[]) => [...prev, { type: "user", text: userText }]);
+    setInput("");
+    setIsAITyping(true);
+    setTimeout(() => handleAIResponse(userText), 1200);
+  };
+
+  // Xử lý voice input (giả lập)
+  const handleVoiceInput = async () => {
+    setIsRecording(true);
+    const text = await fakeSpeechToText();
+    setIsRecording(false);
+    setInput(text as string);
+    // Tự động gửi luôn hoặc để user xác nhận, ở đây tự động gửi luôn
+    handleSend(text as string);
+  };
+
+  // Xử lý AI phản hồi dựa trên intent
+  const handleAIResponse = (userText: string) => {
+    const { intent } = detectIntent(userText);
+    setIsAITyping(false);
+    if (intent === "book_car") {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "Bạn muốn đặt xe đi đâu? Vui lòng nhập thông tin hoặc xác nhận bên dưới." },
+      ]);
+      setShowBooking(true);
+      setShowCarList(false);
+      setShowDetailBooking(false);
+      setQuickSuggestions([]);
+    } else if (intent === "rent_car") {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "Dưới đây là các xe tự lái phù hợp với bạn. Hãy chọn xe bạn muốn thuê!" },
+      ]);
+      setShowCarList(true);
+      setShowBooking(false);
+      setShowDetailBooking(false);
+      setQuickSuggestions([]);
+    } else if (intent === "weather") {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "Thời tiết hôm nay ở Phú Quốc: Nắng đẹp, nhiệt độ 29°C. Bạn muốn đặt xe đi đâu không?" },
+      ]);
+      setQuickSuggestions(QUICK_SUGGESTIONS);
+    } else if (intent === "suggest_food") {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "Gợi ý nhà hàng nổi bật: Nhà hàng Hải Sản Ớt Ngọt, Quán Ra Khơi, Xin Chào... Bạn muốn đặt xe đến đó không?" },
+      ]);
+      setQuickSuggestions([
+        { label: "Đặt xe đến Ớt Ngọt", intent: "book_car" },
+        { label: "Đặt xe đến Ra Khơi", intent: "book_car" },
+      ]);
+    } else {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "Mình chưa rõ ý bạn, bạn muốn đặt xe, thuê xe hay hỏi gì về chuyến đi?" },
+      ]);
+      setQuickSuggestions(QUICK_SUGGESTIONS);
+    }
+  };
+
+  // Xử lý chọn quick suggestion
+  const handleSuggestion = (suggestion: { label: string; intent: string }) => {
+    handleSend(suggestion.label);
+  };
+
+  // Xử lý xác nhận booking
+  const handleBookingConfirm = (data: any) => {
+    setShowBooking(false);
+    setBookingData(data);
+    setShowDetailBooking(true);
+    setMessages((prev: any[]) => [
+      ...prev,
+      { type: "ai", text: "Dưới đây là thông tin chi tiết đặt xe của bạn, vui lòng xác nhận lại." },
+    ]);
+    setQuickSuggestions([]);
+  };
+
+  // Xử lý xác nhận detail booking
+  const handleDetailBookingConfirm = () => {
+    setShowDetailBooking(false);
+    setMessages((prev: any[]) => [
+      ...prev,
+      { type: "ai", text: "Bạn đã đặt xe thành công! Chúc bạn có chuyến đi vui vẻ." },
+    ]);
+    setQuickSuggestions(QUICK_SUGGESTIONS);
+  };
+
+  // Xử lý chọn xe tự lái
   const handleRentCar = (car: any) => {
     setSelectedCarDetail(car);
   };
-  // Xử lý xác nhận booking
-  const handleBookingConfirm = (data: BookingDetailData) => {
-    setShowBooking(false);
-    setMessages((prev) => {
-      // Nếu message cuối cùng là booking_detail thì cập nhật lại, không thêm mới
-      if (prev.length > 0 && prev[prev.length - 1].type === "booking_detail") {
-        return [...prev.slice(0, -1), { type: "booking_detail", data }];
-      }
-      // Nếu message cuối là system và trước đó là booking_detail, thì cập nhật booking_detail
-      if (
-        prev.length > 1 &&
-        prev[prev.length - 1].type === "system" &&
-        prev[prev.length - 2].type === "booking_detail"
-      ) {
-        return [
-          ...prev.slice(0, -2),
-          {
-            type: "system",
-            text: "Dưới đây là thông tin chi tiết đặt xe của bạn, vui lòng xác nhận lại.",
-          },
-          { type: "booking_detail", data },
-        ];
-      }
-      // Ngược lại, thêm mới như cũ
-      return [
-        ...prev,
-        {
-          type: "system",
-          text: "Dưới đây là thông tin chi tiết đặt xe của bạn, vui lòng xác nhận lại.",
-        },
-        { type: "booking_detail", data },
-      ];
-    });
-  };
-
-  // Xử lý gửi tin nhắn user
-  const handleSend = () => {
-    if (input.trim() !== "") {
-      setMessages((prev) => [...prev, { type: "user", text: input.trim() }]);
-      setInput("");
-    }
-  };
-
-  // Xử lý chọn xe
+  // Xử lý chọn xe trong modal chi tiết
   const handleSelectCar = (car: any) => {
-    setSelectedCarDetail(null); // đóng modal chi tiết xe
-    setPendingCar(car); // lưu xe đang chọn
-    setMessages((prev) => [
+    setSelectedCarDetail(null);
+    setMessages((prev: any[]) => [
       ...prev,
-      {
-        type: "car_confirm",
-        car,
-      },
+      { type: "ai", text: `Bạn đã chọn xe ${car.name}. Xác nhận thuê xe này?` },
+    ]);
+    setQuickSuggestions([
+      { label: "Xác nhận thuê xe", intent: "confirm_rent" },
+      { label: "Chọn xe khác", intent: "rent_car" },
     ]);
   };
 
-  // Xử lý xác nhận chọn xe
-  const handleConfirmCar = () => {
-    setPendingCar(null);
-    router.push("/screens/CarRentalScreen");
-  };
-
-  // Xử lý huỷ chọn xe
-  const handleCancelCar = () => {
-    setPendingCar(null);
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "system",
-        text: "Bạn đã huỷ chọn xe.",
-      },
-    ]);
+  // Render từng message
+  const renderMessage = (msg: any, idx: number) => {
+    if (msg.type === "ai") {
+      return (
+        <View key={idx} style={styles.aiMsgRow}>
+          <View style={styles.avatarWrap}>
+            <Ionicons name="sparkles" size={28} color="#F4C95D" />
+          </View>
+          <View style={styles.aiMsgBubble}>
+            <Text style={styles.aiMsgText}>{msg.text}</Text>
+          </View>
+        </View>
+      );
+    }
+    if (msg.type === "user") {
+      return (
+        <View key={idx} style={styles.userMsgRow}>
+          <View style={styles.userMsgBubble}>
+            <Text style={styles.userMsgText}>{msg.text}</Text>
+          </View>
+        </View>
+      );
+    }
+    return null;
   };
 
   return (
@@ -130,9 +218,9 @@ export default function HomeScreen() {
     >
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
+          style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
-          style={{ flex: 1 }}
         >
           {/* Header */}
           <View style={styles.header}>
@@ -148,476 +236,108 @@ export default function HomeScreen() {
           <ScrollView
             ref={scrollViewRef}
             contentContainerStyle={{ padding: 16, flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
           >
-            {/* Tin nhắn AI đầu tiên */}
-            <View style={styles.aiMsgRow}>
-              <View style={styles.aiMsgBubble}>
-                <Text style={styles.aiMsgText}>
-                  Chào bạn! <Text>😊</Text> Mình thấy bạn đang có mặt tại Phú
-                  Quốc , thật tuyệt vời! 🎉{"\n"}
-                  Bạn đang muốn đặt xe có tài xế để thoải mái khám phá các điểm
-                  đến, hay muốn thuê xe tự lái để chủ động vi vu theo cách riêng
-                  của mình? 🚗
-                </Text>
-                <View style={styles.aiBtnRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.aiBtn,
-                      selectedOption === "datxe"
-                        ? styles.aiBtnSelected
-                        : styles.aiBtnUnselected,
-                    ]}
-                    onPress={() => {
-                      setSelectedOption("datxe");
-                      setMessages((prev) => [
-                        ...prev,
-                        { type: "user", text: "Đặt xe" },
-                      ]);
-                      setShowBooking(true);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.aiBtnText,
-                        selectedOption === "datxe"
-                          ? styles.aiBtnTextSelected
-                          : styles.aiBtnTextUnselected,
-                      ]}
-                    >
-                      Đặt xe
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.aiBtn,
-                      selectedOption === "thuexe"
-                        ? styles.aiBtnSelected
-                        : styles.aiBtnUnselected,
-                    ]}
-                    onPress={() => setSelectedOption("thuexe")}
-                  >
-                    <Text
-                      style={[
-                        styles.aiBtnText,
-                        selectedOption === "thuexe"
-                          ? styles.aiBtnTextSelected
-                          : styles.aiBtnTextUnselected,
-                      ]}
-                    >
-                      Thuê xe
-                    </Text>
-                  </TouchableOpacity>
+            {messages.map(renderMessage)}
+            {isAITyping && (
+              <View style={styles.aiMsgRow}>
+                <View style={styles.avatarWrap}>
+                  <Ionicons name="sparkles" size={28} color="#F4C95D" />
+                </View>
+                <View style={styles.aiMsgBubble}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <ActivityIndicator size="small" color="#009CA6" style={{ marginRight: 8 }} />
+                    <Text style={styles.aiMsgText}>AI đang soạn...</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            {/* Render CarRentList nếu chọn Thuê xe */}
-            {selectedOption === "thuexe" && (
-              <>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "flex-end",
-                    marginBottom: 8,
-                  }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: "#009CA6",
-                      borderRadius: 12,
-                      paddingVertical: 12,
-                      paddingHorizontal: 24,
-                      alignSelf: "flex-end",
-                      maxWidth: "80%",
-                    }}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 15 }}>
-                      Tôi đang ở Phú Quốc
-                    </Text>
-                  </View>
-                </View>
-                <CarRentList onRentCar={handleRentCar} />
-              </>
             )}
-            {/* Render các message trong chatbox */}
-            {messages.map((msg, idx) => {
-              if (msg.type === "system") {
-                return (
-                  <View
-                    key={idx}
-                    style={[styles.systemMsg, { marginBottom: 16 }]}
-                  >
-                    <Text style={styles.systemMsgText}>{msg.text}</Text>
-                  </View>
-                );
-              }
-              if (msg.type === "booking_detail") {
-                return (
-                  <View key={idx} style={{ marginBottom: 16 }}>
-                    <DetailBooking
-                      {...msg.data}
-                      onEdit={() => setShowBooking(true)}
-                      onConfirm={() => router.push("/screens/ChatwithDriver")}
-                    />
-                  </View>
-                );
-              }
-              if (msg.type === "user") {
-                return (
-                  <View
-                    key={idx}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "flex-end",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <View
-                      style={{
-                        backgroundColor: "#009CA6",
-                        borderRadius: 12,
-                        paddingVertical: 8,
-                        paddingHorizontal: 16,
-                        alignSelf: "flex-end",
-                        maxWidth: "80%",
-                      }}
-                    >
-                      <Text style={{ color: "#fff", fontSize: 15 }}>
-                        {msg.text}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              }
-              if (msg.type === "car_status") {
-                return (
-                  <View
-                    key={idx}
-                    style={{
-                      marginBottom: 16,
-                      borderRadius: 16,
-                      backgroundColor: "#fff",
-                      overflow: "hidden",
-                      shadowColor: "#009CA6",
-                      shadowOpacity: 0.08,
-                      shadowRadius: 12,
-                      elevation: 3,
-                    }}
-                  >
-                    {/* Bản đồ tĩnh */}
-                    <View
-                      style={{
-                        height: 160,
-                        backgroundColor: "#e0f7fa",
-                        borderTopLeftRadius: 16,
-                        borderTopRightRadius: 16,
-                        overflow: "hidden",
-                        position: "relative",
-                      }}
-                    >
-                      <View
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          top: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: "#e0f7fa",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text style={{ color: "#009CA6", fontWeight: "bold" }}>
-                          [Bản đồ tĩnh]
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          top: "60%",
-                          marginLeft: -24,
-                        }}
-                      >
-                        <Ionicons name="car" size={48} color="#F4C95D" />
-                      </View>
-                    </View>
-                    {/* Thông tin tài xế */}
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        padding: 12,
-                        backgroundColor: "#fff",
-                        borderRadius: 12,
-                        margin: 12,
-                        marginBottom: 0,
-                        shadowColor: "#009CA6",
-                        shadowOpacity: 0.06,
-                        shadowRadius: 6,
-                        elevation: 1,
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 24,
-                          overflow: "hidden",
-                          marginRight: 12,
-                          backgroundColor: "#eee",
-                        }}
-                      >
-                        <Ionicons
-                          name="person"
-                          size={40}
-                          color="#009CA6"
-                          style={{ alignSelf: "center", marginTop: 4 }}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            fontWeight: "bold",
-                            color: "#222",
-                            fontSize: 15,
-                          }}
-                        >
-                          {msg.driver?.name}
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginTop: 2,
-                          }}
-                        >
-                          <Ionicons name="star" size={14} color="#F4C95D" />
-                          <Text
-                            style={{
-                              color: "#009CA6",
-                              fontSize: 13,
-                              marginLeft: 4,
-                            }}
-                          >
-                            {msg.driver?.rating}
-                          </Text>
-                          <Text
-                            style={{
-                              color: "#b0b0b0",
-                              fontSize: 13,
-                              marginLeft: 6,
-                            }}
-                          >
-                            ({msg.driver?.reviews} đánh giá)
-                          </Text>
-                        </View>
-                        <Text
-                          style={{
-                            color: "#009CA6",
-                            fontSize: 13,
-                            marginTop: 2,
-                          }}
-                        >
-                          Còn {msg.driver?.distance} mét.
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#e0f7fa",
-                          borderRadius: 20,
-                          padding: 8,
-                          marginLeft: 8,
-                        }}
-                      >
-                        <Ionicons name="call" size={22} color="#009CA6" />
-                      </TouchableOpacity>
-                    </View>
-                    {/* Trạng thái xe và các nút hành động */}
-                    <View style={{ padding: 12, paddingTop: 8 }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Ionicons
-                          name="car"
-                          size={18}
-                          color="#009CA6"
-                          style={{ marginRight: 8 }}
-                        />
-                        <View
-                          style={{
-                            flex: 1,
-                            height: 6,
-                            backgroundColor: "#009CA6",
-                            borderRadius: 3,
-                          }}
-                        />
-                      </View>
-                      <View
-                        style={{
-                          backgroundColor: "#f2f2f2",
-                          borderRadius: 8,
-                          padding: 10,
-                          marginBottom: 10,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "#F44336",
-                            fontWeight: "bold",
-                            fontSize: 15,
-                          }}
-                        >
-                          Xe của bạn đang trên đường đến!
-                        </Text>
-                        <Text
-                          style={{ color: "#222", fontSize: 14, marginTop: 2 }}
-                        >
-                          ⏱️ Thời gian đến dự kiến: {msg.eta} phút.{"\n"}Trong
-                          lúc chờ đợi, bạn có thể:
-                        </Text>
-                      </View>
-                      <View style={{ flexDirection: "row", gap: 10 }}>
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "#009CA6",
-                            borderRadius: 8,
-                            paddingVertical: 10,
-                            paddingHorizontal: 18,
-                            marginRight: 8,
-                          }}
-                        >
-                          <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                            Thời tiết hôm nay
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "#F4C95D",
-                            borderRadius: 8,
-                            paddingVertical: 10,
-                            paddingHorizontal: 18,
-                          }}
-                        >
-                          <Text
-                            style={{ color: "#009CA6", fontWeight: "bold" }}
-                          >
-                            Liên hệ tài xế
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                );
-              }
-              if (msg.type === "car_confirm") {
-                return (
-                  <View key={idx} style={[styles.systemMsg, { marginBottom: 16 }]}>
-                    <Text style={styles.systemMsgText}>
-                      Bạn đã chọn xe <Text style={{ fontWeight: "bold", color: "#009CA6" }}>{msg.car?.name}</Text>.{"\n"}
-                      Xác nhận đặt xe này?
-                    </Text>
-                    <View style={{ flexDirection: "row", marginTop: 10, gap: 12 }}>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#4CAF50",
-                          borderRadius: 8,
-                          paddingVertical: 10,
-                          paddingHorizontal: 18,
-                          marginRight: 8,
-                        }}
-                        onPress={handleConfirmCar}
-                      >
-                        <Text style={{ color: "#fff", fontWeight: "bold" }}>Xác nhận</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#F44336",
-                          borderRadius: 8,
-                          paddingVertical: 10,
-                          paddingHorizontal: 18,
-                        }}
-                        onPress={handleCancelCar}
-                      >
-                        <Text style={{ color: "#fff", fontWeight: "bold" }}>Huỷ</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                );
-              }
-              return null;
-            })}
+            {/* Hiển thị form booking nếu cần */}
+            {showBooking && (
+              <View style={{ marginTop: 12 }}>
+                <BookingForm onConfirm={handleBookingConfirm} />
+              </View>
+            )}
+            {/* Hiển thị detail booking nếu cần */}
+            {showDetailBooking &&
+              bookingData &&
+              typeof bookingData === 'object' &&
+              !Array.isArray(bookingData) &&
+              'destination' in bookingData &&
+              'pickup' in bookingData &&
+              'selectedTime' in bookingData &&
+              'selectedCar' in bookingData && (
+                <View style={{ marginTop: 12 }}>
+                  <DetailBooking
+                    destination={bookingData.destination}
+                    pickup={bookingData.pickup}
+                    selectedTime={bookingData.selectedTime}
+                    selectedCar={bookingData.selectedCar}
+                    onEdit={() => setShowBooking(true)}
+                    onConfirm={handleDetailBookingConfirm}
+                  />
+                </View>
+            )}
+            {/* Hiển thị danh sách xe tự lái nếu cần */}
+            {showCarList && (
+              <View style={{ marginTop: 12 }}>
+                <CarRentList onRentCar={handleRentCar} />
+              </View>
+            )}
           </ScrollView>
+          {/* Quick Suggestions */}
+          {quickSuggestions.length > 0 && (
+            <View style={styles.suggestionRow}>
+              {quickSuggestions.map((s, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={styles.suggestionBtn}
+                  onPress={() => handleSuggestion(s)}
+                >
+                  <Text style={styles.suggestionText}>{s.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {/* Thanh nhập nội dung */}
           <View style={styles.inputRow}>
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleVoiceInput} activeOpacity={0.7}>
               <Ionicons
-                name="happy-outline"
-                size={24}
-                color="#009CA6"
+                name={isRecording ? "mic" : "mic-outline"}
+                size={28}
+                color={isRecording ? "#F44336" : "#009CA6"}
                 style={{ marginHorizontal: 8 }}
               />
             </TouchableOpacity>
             <TextInput
               ref={inputRef}
               style={styles.input}
-              placeholder="Ask anything..."
+              placeholder="Bạn muốn đi đâu, làm gì? Hãy nhập hoặc nói..."
               placeholderTextColor="#009CA6"
               value={input}
               onChangeText={setInput}
-              onSubmitEditing={handleSend}
+              onSubmitEditing={() => handleSend()}
               returnKeyType="send"
+              editable={!isRecording}
             />
             {input.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setInput("")}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="close-circle"
-                  size={22}
-                  color="#009CA6"
-                  style={{ marginRight: 4 }}
-                />
+              <TouchableOpacity onPress={() => setInput("")} activeOpacity={0.7}>
+                <Ionicons name="close-circle" size={22} color="#009CA6" style={{ marginRight: 4 }} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => inputRef.current?.focus()}>
-              <Ionicons
-                name="mic-outline"
-                size={24}
-                color="#009CA6"
-                style={{ marginHorizontal: 8 }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSend}>
+            <TouchableOpacity onPress={() => handleSend()} disabled={isRecording}>
               <Ionicons name="send" size={24} color="#F4C95D" />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-        {/* Popup BookingForm */}
-        {showBooking && (
-          <View style={styles.popupOverlay}>
-            <TouchableOpacity
-              style={styles.popupBg}
-              activeOpacity={1}
-              onPress={() => setShowBooking(false)}
+          {/* Popup chi tiết xe */}
+          {selectedCarDetail && (
+            <CarDetailModal
+              car={selectedCarDetail}
+              onClose={() => setSelectedCarDetail(null)}
+              onSelectCar={handleSelectCar}
             />
-            <View style={styles.popupContent}>
-              <BookingForm onConfirm={handleBookingConfirm} />
-            </View>
-          </View>
-        )}
-        {/* Popup chi tiết xe */}
-        {selectedCarDetail && (
-          <CarDetailModal
-            car={selectedCarDetail}
-            onClose={() => setSelectedCarDetail(null)}
-            onSelectCar={handleSelectCar} // truyền prop này
-          />
-        )}
+          )}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -643,12 +363,23 @@ const styles = StyleSheet.create({
   aiMsgRow: {
     flexDirection: "row",
     marginBottom: 12,
+    alignItems: "flex-start",
+  },
+  avatarWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E0F7FA",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+    marginTop: 2,
   },
   aiMsgBubble: {
     backgroundColor: "#f2f2f2",
-    borderRadius: 12,
-    padding: 12,
-    maxWidth: "90%",
+    borderRadius: 14,
+    padding: 14,
+    maxWidth: "85%",
     alignSelf: "flex-start",
     shadowColor: "#009CA6",
     shadowOpacity: 0.04,
@@ -658,46 +389,25 @@ const styles = StyleSheet.create({
   aiMsgText: {
     color: "#222",
     fontSize: 15,
-    marginBottom: 10,
+    marginBottom: 2,
     lineHeight: 21,
   },
-  aiBtnRow: {
+  userMsgRow: {
     flexDirection: "row",
-    gap: 8,
+    justifyContent: "flex-end",
+    marginBottom: 12,
   },
-  aiBtn: {
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 28,
-    marginRight: 10,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  aiBtnSelected: {
+  userMsgBubble: {
     backgroundColor: "#009CA6",
-    borderColor: "#009CA6",
-    shadowColor: "#009CA6",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    alignSelf: "flex-end",
+    maxWidth: "80%",
   },
-  aiBtnUnselected: {
-    backgroundColor: "#f9f9f9",
-    borderColor: "#b2dfdb",
-    shadowColor: "transparent",
-  },
-  aiBtnText: {
+  userMsgText: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 15,
-  },
-  aiBtnTextSelected: {
-    color: "#fff",
-  },
-  aiBtnTextUnselected: {
-    color: "#009CA6",
   },
   inputRow: {
     flexDirection: "row",
@@ -724,56 +434,25 @@ const styles = StyleSheet.create({
     borderColor: "#009CA6",
     marginHorizontal: 8,
   },
-  popupOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.18)",
-    zIndex: 100,
+  suggestionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    paddingHorizontal: 16,
+    marginBottom: 2,
+    gap: 8,
   },
-  popupBg: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  suggestionBtn: {
+    backgroundColor: "#E0F7FA",
+    borderRadius: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    marginRight: 8,
+    marginBottom: 8,
   },
-  popupContent: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: "100%",
-    maxWidth: "100%",
-    backgroundColor: "transparent",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingBottom: 0,
-  },
-  closeBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    zIndex: 10,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 2,
-    elevation: 2,
-  },
-  systemMsg: {
-    backgroundColor: "#f2f2f2",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    alignSelf: "flex-start",
-    maxWidth: "90%",
-  },
-  systemMsgText: {
-    color: "#222",
+  suggestionText: {
+    color: "#009CA6",
+    fontWeight: "bold",
     fontSize: 15,
   },
 });
