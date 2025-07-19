@@ -81,7 +81,7 @@ export default function BookingForm({ onConfirm }: BookingFormProps) {
           onPress={() => setSelectedTime('custom')}
         >
           <Ionicons name="calendar-outline" size={18} color={selectedTime === 'custom' ? '#fff' : '#009CA6'} style={{ marginRight: 6 }} />
-          <Text style={[styles.selectBtnText, selectedTime === 'custom' && { color: '#fff' }]}>Chọn thời gian khác</Text>
+          <Text style={[styles.selectBtnText, selectedTime === 'custom' && { color: '#fff' }]}>Thời gian khác</Text>
         </TouchableOpacity>
       </View>
       {/* Label: Chọn loại xe */}

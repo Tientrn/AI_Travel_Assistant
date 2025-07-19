@@ -44,43 +44,33 @@ const CarDetailModal = ({
     <View style={styles.overlay}>
       <TouchableOpacity style={styles.bg} activeOpacity={1} onPress={onClose} />
       <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Close button */}
-          <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-            <Ionicons name="close" size={28} color="#222" />
-          </TouchableOpacity>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {/* Car image */}
           <Image
             source={{ uri: car.image }}
             style={styles.image}
             resizeMode="cover"
           />
+          
           {/* Car name & info */}
-          <View style={{ paddingHorizontal: 16, marginTop: 8 }}>
+          <View style={styles.contentContainer}>
             <Text style={styles.carName}>{car.name}</Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: 4,
-              }}
-            >
-              <Ionicons name="star" size={16} color="#F4C95D" />
-              <Text
-                style={{ color: "#222", fontWeight: "bold", marginLeft: 4 }}
-              >
+            <View style={styles.ratingRow}>
+              <Ionicons name="star" size={18} color="#F4C95D" />
+              <Text style={styles.ratingText}>
                 {car.rating || 4.9}
               </Text>
               <MaterialIcons
                 name="directions-car"
-                size={16}
+                size={18}
                 color="#009CA6"
-                style={{ marginLeft: 12 }}
+                style={{ marginLeft: 16 }}
               />
-              <Text style={{ color: "#222", marginLeft: 4 }}>
+              <Text style={styles.tripsText}>
                 {car.trips || 23} chuyến
               </Text>
             </View>
+            
             <Text style={styles.sectionLabel}>Thời gian thuê xe</Text>
             <View style={styles.timeRow}>
               <View style={styles.timeBox}>
@@ -92,6 +82,7 @@ const CarDetailModal = ({
                 <Text style={styles.timeValue}>22h00 T5, 19/06/2025</Text>
               </View>
             </View>
+            
             <Text style={styles.sectionLabel}>Địa điểm giao nhận xe</Text>
             <View style={styles.locationBox}>
               <Ionicons
@@ -100,11 +91,11 @@ const CarDetailModal = ({
                 color="#009CA6"
                 style={{ marginRight: 8 }}
               />
-              <Text style={{ color: "#009CA6", fontWeight: "bold" }}>
+              <Text style={styles.locationText}>
                 {mockLocation}
               </Text>
               <View style={{ flex: 1 }} />
-              <Text style={{ color: "#009CA6", fontWeight: "bold" }}>
+              <Text style={styles.freeText}>
                 Miễn phí
               </Text>
             </View>
@@ -115,27 +106,29 @@ const CarDetailModal = ({
                 color="#009CA6"
                 style={{ marginRight: 8 }}
               />
-              <Text style={{ color: "#009CA6" }}>
-                Thành phố Phú Quốc, tỉnh Kiên Giang, Việt Nam
+              <Text style={styles.locationText}>
+                Phú Quốc, Kiên Giang
               </Text>
               <View style={{ flex: 1 }} />
-              <Text style={{ color: "#F4C95D", fontWeight: "bold" }}>
+              <Text style={styles.feeText}>
                 30.000đ
               </Text>
             </View>
+            
             <Text style={styles.sectionLabel}>Bảo hiểm thuê xe</Text>
             <View style={styles.insuranceBox}>
               <Ionicons
                 name="shield-checkmark"
-                size={20}
+                size={22}
                 color="#009CA6"
-                style={{ marginRight: 8 }}
+                style={{ marginRight: 12 }}
               />
-              <Text style={{ color: "#222", flex: 1 }}>
+              <Text style={styles.insuranceText}>
                 Chuyến đi có mua bảo hiểm. Khách thuê bồi thường tối đa
                 2.000.000 VND trong trường hợp có sự cố ngoài ý muốn.
               </Text>
             </View>
+            
             <Text style={styles.sectionLabel}>Đặc điểm</Text>
             <View style={styles.featuresRow}>
               <Text style={styles.featureText}>
@@ -145,152 +138,171 @@ const CarDetailModal = ({
               <Text style={styles.featureText}>• {car.seats || "4 chỗ"}</Text>
               <Text style={styles.featureText}>• 101/100KM</Text>
             </View>
+            
             <Text style={styles.sectionLabel}>Mô tả</Text>
             <Text style={styles.descText}>
               Xe đời mới, sạch sẽ, máy êm – phù hợp cho cả di chuyển công tác
               lẫn du lịch. Nội thất rộng rãi, trang bị đầy đủ điều hòa, màn hình
               cảm ứng và nhiều tính năng an toàn.
             </Text>
+            
             <Text style={styles.sectionLabel}>Các tiện nghi trên xe</Text>
             <View style={styles.amenitiesRow}>
               {mockFeatures.map((f, idx) => (
                 <View key={idx} style={styles.amenityBox}>
-                  <Ionicons name={f.icon as any} size={20} color="#009CA6" />
+                  <Ionicons name={f.icon as any} size={22} color="#009CA6" />
                   <Text style={styles.amenityLabel}>{f.label}</Text>
                 </View>
               ))}
             </View>
+            
             <Text style={styles.sectionLabel}>Vị trí xe</Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+            <View style={styles.locationInfoRow}>
               <Ionicons
                 name="location"
-                size={18}
+                size={20}
                 color="#009CA6"
-                style={{ marginRight: 8 }}
+                style={{ marginRight: 12 }}
               />
-              <Text style={{ color: "#222" }}>{mockLocation}</Text>
+              <Text style={styles.locationInfoText}>{mockLocation}</Text>
             </View>
             <View style={styles.mapBox}>
               <Ionicons
                 name="map"
-                size={40}
+                size={48}
                 color="#F4C95D"
-                style={{ alignSelf: "center" }}
+                style={{ alignSelf: "center", marginBottom: 8 }}
               />
-              <Text style={{ color: "#b0b0b0", textAlign: "center" }}>
+              <Text style={styles.mapText}>
                 [Bản đồ vị trí xe]
               </Text>
             </View>
+            
             <Text style={styles.sectionLabel}>Chủ xe</Text>
             <View style={styles.ownerBox}>
               <View style={styles.ownerAvatar}>
-                <Ionicons name="person" size={36} color="#009CA6" />
+                <Ionicons name="person" size={40} color="#009CA6" />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: "bold", color: "#222" }}>
+              <View style={styles.ownerInfo}>
+                <Text style={styles.ownerName}>
                   {mockOwner.name}
                 </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginVertical: 2,
-                  }}
-                >
-                  <Ionicons name="star" size={14} color="#F4C95D" />
-                  <Text
-                    style={{ color: "#009CA6", fontSize: 13, marginLeft: 4 }}
-                  >
+                <View style={styles.ownerRatingRow}>
+                  <Ionicons name="star" size={16} color="#F4C95D" />
+                  <Text style={styles.ownerRatingText}>
                     {mockOwner.rating}
                   </Text>
-                  <Text
-                    style={{ color: "#b0b0b0", fontSize: 13, marginLeft: 6 }}
-                  >
+                  <Text style={styles.ownerTripsText}>
                     ({mockOwner.trips} chuyến)
                   </Text>
                 </View>
-                <Text style={{ color: "#b0b0b0", fontSize: 13 }}>
+                <Text style={styles.ownerStatsText}>
                   Tỉ lệ phản hồi {mockOwner.responseRate} • Tỉ lệ đồng ý{" "}
                   {mockOwner.acceptRate} • Phản hồi trong{" "}
                   {mockOwner.responseTime}
                 </Text>
               </View>
             </View>
+            
             <Text style={styles.sectionLabel}>Đánh giá</Text>
             {mockReviews.map((r, idx) => (
               <View key={idx} style={styles.reviewBox}>
-                <Text style={{ fontWeight: "bold", color: "#009CA6" }}>
+                <Text style={styles.reviewName}>
                   {r.name}
                 </Text>
-                <Text style={{ color: "#b0b0b0", fontSize: 13, marginLeft: 8 }}>
+                <Text style={styles.reviewDate}>
                   {r.date}
                 </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginLeft: 8,
-                  }}
-                >
-                  <Ionicons name="star" size={14} color="#F4C95D" />
-                  <Text
-                    style={{ color: "#009CA6", fontSize: 13, marginLeft: 2 }}
-                  >
+                <View style={styles.reviewRatingRow}>
+                  <Ionicons name="star" size={16} color="#F4C95D" />
+                  <Text style={styles.reviewRatingText}>
                     {r.rating}
                   </Text>
                 </View>
               </View>
             ))}
+            
             <Text style={styles.sectionLabel}>Giấy tờ thuê xe</Text>
-            <Text style={styles.descText}>
-              Chọn 1 trong 2 hình thức: GPLX(đối chiếu) & CCCD (đối chiếu VNeID)
-              hoặc GPLX(đối chiếu) & Passport (giữ lại)
-            </Text>
+            <View style={styles.termsContainer}>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>GPLX (đối chiếu) & CCCD (đối chiếu VNeID)</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>GPLX (đối chiếu) & Passport (giữ lại)</Text>
+              </View>
+            </View>
+            
             <Text style={styles.sectionLabel}>Tài sản thế chấp</Text>
-            <Text style={styles.descText}>
-              15 triệu (tiền mặt/chuyển khoản cho chủ xe khi nhận xe) hoặc xe
-              máy (kèm cà vẹt gốc) giá trị 15 triệu
-            </Text>
-            <Text style={styles.sectionLabel}>Điều khoản</Text>
-            <Text style={styles.descText}>
-              - Sử dụng xe đúng mục đích.\n- Không sử dụng xe vào mục đích phi
-              pháp, trái luật.\n- Không hút thuốc, nhai kẹo cao su, xả rác trong
-              xe.\n- Không chở hàng quốc cấm, dễ cháy nổ.
-            </Text>
+            <View style={styles.termsContainer}>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>15 triệu (tiền mặt/chuyển khoản cho chủ xe khi nhận xe)</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Xe máy (kèm cà vẹt gốc) giá trị 15 triệu</Text>
+              </View>
+            </View>
+            
             <Text style={styles.sectionLabel}>Phí có thể phát sinh</Text>
-            <Text style={styles.descText}>
-              Phí vượt giới hạn: Không tính phí\nPhí quá giờ: 50.000đ/giờ\nPhí
-              phát sinh nếu hoàn trả xe trễ giờ. Trường hợp trễ quá 5 giờ, phụ
-              thu thêm 1 ngày thuê.
-            </Text>
+            <View style={styles.termsContainer}>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Phí vượt giới hạn: Không tính phí</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Phí quá giờ: 50.000đ/giờ</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Phí phát sinh nếu hoàn trả xe trễ giờ</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Trường hợp trễ quá 5 giờ, phụ thu thêm 1 ngày thuê</Text>
+              </View>
+            </View>
+            
             <Text style={styles.sectionLabel}>Chính sách huỷ chuyến</Text>
             <Text style={styles.descText}>
               An tâm thuê xe, không lo bị huỷ chuyến với chính sách huỷ chuyến
               của AI Drive.
             </Text>
+            
+            <Text style={styles.sectionLabel}>Điều khoản</Text>
+            <View style={styles.termsContainer}>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Sử dụng xe đúng mục đích.</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Không sử dụng xe vào mục đích phi pháp, trái luật.</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Không hút thuốc, nhai kẹo cao su, xả rác trong xe.</Text>
+              </View>
+              <View style={styles.termItem}>
+                <Text style={styles.bulletPoint}>•</Text>
+                <Text style={styles.termText}>Không chở hàng quốc cấm, dễ cháy nổ.</Text>
+              </View>
+            </View>
+            
             <TouchableOpacity
-              style={{
-                backgroundColor: "#009CA6",
-                borderRadius: 8,
-                paddingVertical: 12,
-                alignItems: "center",
-                marginTop: 18,
-                marginBottom: 0,
-              }}
+              style={styles.selectButton}
               onPress={() => onSelectCar && onSelectCar(car)}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+              <Text style={styles.selectButtonText}>
                 Chọn xe này
               </Text>
             </TouchableOpacity>
+            
             <TouchableOpacity style={styles.reportBtn}>
-              <Text style={{ color: "#F44336", fontWeight: "bold" }}>
+              <Text style={styles.reportText}>
                 Báo cáo xe này
               </Text>
             </TouchableOpacity>
@@ -308,7 +320,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.18)",
+    backgroundColor: "rgba(0,0,0,0.25)",
     zIndex: 100,
     justifyContent: "flex-end",
   },
@@ -321,40 +333,61 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: "92%",
     paddingBottom: 16,
     paddingTop: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  closeBtn: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    zIndex: 10,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 2,
-    elevation: 2,
+  scrollContent: {
+    paddingBottom: 16,
   },
   image: {
     width: "100%",
-    height: 180,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    height: 200,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    marginTop: 12,
   },
   carName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#222",
-    marginTop: 8,
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  ratingText: {
+    color: "#1a1a1a",
+    fontWeight: "700",
+    marginLeft: 6,
+    fontSize: 16,
+  },
+  tripsText: {
+    color: "#666",
+    fontSize: 15,
+    marginLeft: 16,
+    fontWeight: "500",
   },
   sectionLabel: {
-    fontWeight: "bold",
-    color: "#009CA6",
-    marginTop: 18,
-    marginBottom: 6,
-    fontSize: 15,
+    fontWeight: "700",
+    color: "#2d3748",
+    marginTop: 20,
+    marginBottom: 8,
+    fontSize: 16,
+    letterSpacing: -0.3,
   },
   timeRow: {
     flexDirection: "row",
@@ -362,37 +395,68 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timeBox: {
-    backgroundColor: "#E0F7FA",
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 14,
     flex: 1,
-    marginRight: 8,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
   timeTitle: {
-    color: "#009CA6",
-    fontWeight: "bold",
+    color: "#4a5568",
+    fontWeight: "600",
     fontSize: 13,
   },
   timeValue: {
-    color: "#222",
+    color: "#2d3748",
     fontSize: 13,
-    marginTop: 2,
+    marginTop: 4,
+    fontWeight: "500",
   },
   locationBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E0F7FA",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 6,
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  locationText: {
+    color: "#2d3748",
+    fontWeight: "600",
+    flex: 1,
+    fontSize: 13,
+  },
+  freeText: {
+    color: "#38a169",
+    fontWeight: "700",
+    marginLeft: 8,
+    fontSize: 13,
+  },
+  feeText: {
+    color: "#d69e2e",
+    fontWeight: "700",
+    marginLeft: 8,
+    fontSize: 13,
   },
   insuranceBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F9FBE7",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 6,
+    backgroundColor: "#f0fff4",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#c6f6d5",
+  },
+  insuranceText: {
+    color: "#2d3748",
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
   },
   featuresRow: {
     flexDirection: "row",
@@ -400,14 +464,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   featureText: {
-    color: "#009CA6",
+    color: "#4a5568",
     fontSize: 13,
-    marginRight: 8,
+    marginRight: 12,
+    fontWeight: "500",
   },
   descText: {
-    color: "#222",
+    color: "#4a5568",
     fontSize: 14,
     marginBottom: 4,
+    lineHeight: 20,
   },
   amenitiesRow: {
     flexDirection: "row",
@@ -415,47 +481,171 @@ const styles = StyleSheet.create({
   },
   amenityBox: {
     alignItems: "center",
-    marginRight: 18,
+    marginRight: 20,
   },
   amenityLabel: {
-    color: "#009CA6",
+    color: "#4a5568",
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  locationInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  locationInfoText: {
+    color: "#2d3748",
+    flex: 1,
+    fontWeight: "500",
   },
   mapBox: {
-    backgroundColor: "#E0F7FA",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#f7fafc",
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  mapText: {
+    color: "#a0aec0",
+    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "500",
   },
   ownerBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F2F2F2",
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: "#f7fafc",
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
   ownerAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#eee",
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#e2e8f0",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 14,
+  },
+  ownerInfo: {
+    flex: 1,
+  },
+  ownerName: {
+    fontWeight: "700",
+    color: "#2d3748",
+    fontSize: 16,
+  },
+  ownerRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 3,
+  },
+  ownerRatingText: {
+    color: "#4a5568",
+    fontSize: 13,
+    marginLeft: 4,
+    fontWeight: "600",
+  },
+  ownerTripsText: {
+    color: "#a0aec0",
+    fontSize: 13,
+    marginLeft: 8,
+  },
+  ownerStatsText: {
+    color: "#a0aec0",
+    fontSize: 13,
+    lineHeight: 18,
   },
   reviewBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E0F7FA",
-    borderRadius: 8,
-    padding: 8,
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  reviewName: {
+    fontWeight: "700",
+    color: "#4a5568",
+    fontSize: 14,
+  },
+  reviewDate: {
+    color: "#a0aec0",
+    fontSize: 13,
+    marginLeft: 10,
+  },
+  reviewRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  reviewRatingText: {
+    color: "#4a5568",
+    fontSize: 13,
+    marginLeft: 3,
+    fontWeight: "600",
+  },
+  termsContainer: {
+    marginTop: 6,
+    marginBottom: 10,
+  },
+  termItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 6,
   },
+  bulletPoint: {
+    fontSize: 16,
+    color: "#4a5568",
+    marginRight: 8,
+    marginTop: 2,
+    fontWeight: "600",
+  },
+  termText: {
+    color: "#4a5568",
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+  },
+  selectButton: {
+    backgroundColor: "#2d3748",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  selectButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: -0.3,
+  },
   reportBtn: {
-    marginTop: 18,
+    marginTop: 16,
     alignSelf: "center",
+  },
+  reportText: {
+    color: "#e53e3e",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
 

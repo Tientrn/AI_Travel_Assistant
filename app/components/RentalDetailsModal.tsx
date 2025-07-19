@@ -1,367 +1,487 @@
-import { MaterialIcons } from '@expo/vector-icons'; // Thêm dòng này nếu bạn dùng expo
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import {
-  Modal,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-interface RentalDetailsModalProps {
-  visible: boolean;
+type RentalDetailsModalProps = {
+  car: any;
   onClose: () => void;
-  editable?: boolean;
-  details?: any;
-  onSave?: (details: any) => void;
-}
+  onConfirm: () => void;
+  onModify: () => void;
+};
 
 const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
-  visible,
+  car,
   onClose,
-  editable = false,
-  details,
-  onSave,
+  onConfirm,
+  onModify,
 }) => {
-  const [form, setForm] = React.useState({
-    car: details?.car || "Corolla Altis 2018",
-    info: details?.info || "4 chỗ • Số tự động • Xăng",
-    time: details?.time || "Từ 10:00 20/06/2025 ➝ 10:00 21/06/2025",
-    limit: details?.limit || "1 ngày • Giới hạn: 300km/ngày",
-    fuel: details?.fuel || "⛽ Nhận & trả xe đầy bình",
-    customer: details?.customer || "Nguyen Van A",
-    phone: details?.phone || "0912 345 678",
-    email: details?.email || "nguyenvana@gmail.com",
-    type: details?.type || "Thuê xe tự lái",
-    document: details?.document || "CCCD + Bằng lái xe B1 trở lên",
-  });
-
-  const [showStartPicker, setShowStartPicker] = React.useState(false);
-  const [showEndPicker, setShowEndPicker] = React.useState(false);
-
-  const [startDate, setStartDate] = React.useState<Date | null>(null);
-  const [endDate, setEndDate] = React.useState<Date | null>(null);
-
-  const [editTime, setEditTime] = React.useState(false);
-
-  // Khi lưu, cập nhật lại form.time theo ngày đã chọn
-  React.useEffect(() => {
-    if (startDate && endDate) {
-      const format = (d: Date) =>
-        `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-      handleChange(
-        "time",
-        `Từ ${format(startDate)} ➝ ${format(endDate)}`
-      );
-    }
-    // eslint-disable-next-line
-  }, [startDate, endDate]);
-
-  React.useEffect(() => {
-    if (details) setForm({ ...form, ...details });
-    // eslint-disable-next-line
-  }, [details, visible]);
-
-  // Parse form.time khi không chỉnh sửa để lấy ngày bắt đầu/kết thúc
-  React.useEffect(() => {
-    if (!editable && form.time) {
-      const match = form.time.match(/Từ (\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}) ➝ (\d{2}:\d{2} \d{2}\/\d{2}\/\d{4})/);
-      if (match) {
-        const [start, end] = [match[1], match[2]];
-        const parse = (str: string) => {
-          const [time, date] = str.split(' ');
-          const [hour, minute] = time.split(':').map(Number);
-          const [day, month, year] = date.split('/').map(Number);
-          return new Date(year, month - 1, day, hour, minute);
-        };
-        setStartDate(parse(start));
-        setEndDate(parse(end));
-      }
-    }
-  }, [form.time, editable]);
-
-  const handleChange = (key: string, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.background} onPress={onClose} />
-        <View style={styles.content}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Section: Xe */}
-            <Text style={styles.sectionTitle}>🚗 Xe thuê</Text>
-            <View style={styles.box}>
-              {editable ? (
-                <>
-                  <TextInput
-                    style={styles.primary}
-                    value={form.car}
-                    onChangeText={(t) => handleChange("car", t)}
-                  />
-                  <TextInput
-                    style={styles.sub}
-                    value={form.info}
-                    onChangeText={(t) => handleChange("info", t)}
-                  />
-                </>
-              ) : (
-                <>
-                  <Text style={styles.primary}>{form.car}</Text>
-                  <Text style={styles.sub}>{form.info}</Text>
-                </>
-              )}
+    <View style={styles.overlay}>
+      <TouchableOpacity style={styles.bg} activeOpacity={1} onPress={onClose} />
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark-circle" size={48} color="#38a169" />
             </View>
-            {/* Section: Thời gian */}
-            <Text style={styles.sectionTitle}>🗓️ Thời gian thuê</Text>
-            <View style={styles.box}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={styles.label}>⏱️ Thời gian:</Text>
-                {!editable && (
-                  <TouchableOpacity onPress={() => setEditTime(true)}>
-                    <MaterialIcons name="calendar-today" size={22} color="#009CA6" />
-                  </TouchableOpacity>
-                )}
-              </View>
-              {(editable || editTime) ? (
-                <>
-                  <TouchableOpacity
-                    style={[styles.text, { padding: 10, backgroundColor: '#eee', borderRadius: 8, marginBottom: 8 }]}
-                    onPress={() => setShowStartPicker(true)}
-                  >
-                    <Text>
-                      {startDate
-                        ? `Bắt đầu: ${startDate.toLocaleString()}`
-                        : "Chọn ngày bắt đầu"}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.text, { padding: 10, backgroundColor: '#eee', borderRadius: 8, marginBottom: 8 }]}
-                    onPress={() => setShowEndPicker(true)}
-                  >
-                    <Text>
-                      {endDate
-                        ? `Kết thúc: ${endDate.toLocaleString()}`
-                        : "Chọn ngày kết thúc"}
-                    </Text>
-                  </TouchableOpacity>
-                  {showStartPicker && (
-                    <DateTimePicker
-                      value={startDate || new Date()}
-                      mode="datetime"
-                      display="default"
-                      onChange={(_, date) => {
-                        setShowStartPicker(false);
-                        if (date) setStartDate(date);
-                      }}
-                    />
-                  )}
-                  {showEndPicker && (
-                    <DateTimePicker
-                      value={endDate || new Date()}
-                      mode="datetime"
-                      display="default"
-                      onChange={(_, date) => {
-                        setShowEndPicker(false);
-                        if (date) setEndDate(date);
-                      }}
-                    />
-                  )}
-                  <TextInput
-                    style={styles.text}
-                    value={form.limit}
-                    onChangeText={(t) => handleChange("limit", t)}
-                  />
-                  <TextInput
-                    style={styles.text}
-                    value={form.fuel}
-                    onChangeText={(t) => handleChange("fuel", t)}
-                  />
-                  {/* Khi chỉnh sửa xong, có thể thêm nút "Lưu thời gian" nếu muốn */}
-                  {!editable && (
-                    <TouchableOpacity
-                      style={[styles.closeButton, { backgroundColor: "#009CA6", marginTop: 10, marginBottom: 0 }]}
-                      onPress={() => {
-                        setEditTime(false);
-                        // Cập nhật lại form.time
-                        if (startDate && endDate) {
-                          const format = (d: Date) =>
-                            `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-                          handleChange(
-                            "time",
-                            `Từ ${format(startDate)} ➝ ${format(endDate)}`
-                          );
-                        }
-                      }}
-                    >
-                      <Text style={styles.closeText}>Lưu thời gian</Text>
-                    </TouchableOpacity>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Text style={styles.text}>{form.time}</Text>
-                  <Text style={styles.text}>{form.limit}</Text>
-                  <Text style={styles.text}>{form.fuel}</Text>
-                </>
-              )}
-            </View>
+            <Text style={styles.successTitle}>Thuê xe thành công!</Text>
+            <Text style={styles.orderNumber}>Mã đơn: #RENT2025001</Text>
+          </View>
 
-            {/* Section: Chi phí */}
-            <Text style={styles.sectionTitle}>💰 Chi phí</Text>
-            <View style={styles.box}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Giá cơ bản (1 ngày)</Text>
-                <Text style={styles.text}>844,000đ</Text>
+          {/* Car Image */}
+          <Image
+            source={{ uri: car.image }}
+            style={styles.carImage}
+            resizeMode="cover"
+          />
+
+          {/* Car Details */}
+          <View style={styles.contentContainer}>
+            <Text style={styles.carName}>{car.name}</Text>
+            <View style={styles.carSpecs}>
+              <View style={styles.specItem}>
+                <Ionicons name="people" size={16} color="#4a5568" />
+                <Text style={styles.specText}>{car.seats}</Text>
               </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Phí giao xe</Text>
-                <Text style={styles.text}>50,000đ</Text>
+              <View style={styles.specItem}>
+                <Ionicons name="settings" size={16} color="#4a5568" />
+                <Text style={styles.specText}>{car.transmission}</Text>
               </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Bảo hiểm</Text>
-                <Text style={styles.text}>30,000đ</Text>
+              <View style={styles.specItem}>
+                <Ionicons name="water" size={16} color="#4a5568" />
+                <Text style={styles.specText}>{car.fuel}</Text>
               </View>
-              <View style={styles.row}>
-                <Text style={[styles.label, { color: '#4CAF50' }]}>Giảm giá (20%)</Text>
-                <Text style={[styles.text, { color: '#4CAF50' }]}>-168,800đ</Text>
-              </View>
-              <View style={styles.rowTotal}>
-                <Text style={styles.totalLabel}>Tổng thanh toán</Text>
-                <Text style={styles.totalAmount}>755,200đ</Text>
+              <View style={styles.specItem}>
+                <Ionicons name="star" size={16} color="#fbbf24" />
+                <Text style={styles.specText}>{car.rating} ({car.trips})</Text>
               </View>
             </View>
 
-            {/* Section: Khách hàng */}
-            <Text style={styles.sectionTitle}>👤 Thông tin khách hàng</Text>
-            <View style={styles.box}>
-              <>
-                <Text style={styles.text}>{form.customer}</Text>
-                <Text style={styles.text}>📞 {form.phone}</Text>
-                <Text style={styles.text}>📧 {form.email}</Text>
-                <Text style={styles.text}>🚗 {form.type}</Text>
-              </>
+            {/* Rental Details */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📅 Thời gian thuê xe</Text>
+              <View style={styles.detailRow}>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Nhận xe</Text>
+                  <Text style={styles.detailValue}>21h00 T4, 19/06/2025</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Trả xe</Text>
+                  <Text style={styles.detailValue}>22h00 T5, 20/06/2025</Text>
+                </View>
+              </View>
             </View>
-            {/* Section: Giấy tờ */}
-            <Text style={styles.sectionTitle}>📝 Giấy tờ yêu cầu</Text>
-            <View style={[styles.box, { backgroundColor: '#FFF7E0' }]}>
-              <Text style={[styles.text, { color: '#B45309' }]}>
-                {form.document}
-              </Text>
+
+            {/* Location Details */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📍 Địa điểm giao nhận</Text>
+              <View style={styles.locationBox}>
+                <Ionicons name="location" size={18} color="#4a5568" />
+                <Text style={styles.locationText}>{car.location}</Text>
+                <Text style={styles.freeText}>Miễn phí</Text>
+              </View>
             </View>
-            {editable ? (
-              <TouchableOpacity
-                style={[styles.closeButton, { backgroundColor: "#4CAF50" }]}
-                onPress={() => onSave && onSave(form)}
-              >
-                <Text style={styles.closeText}>Lưu</Text>
+
+            {/* Price Breakdown */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💰 Chi tiết giá</Text>
+              <View style={styles.priceBreakdown}>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Giá thuê cơ bản</Text>
+                  <Text style={styles.priceValue}>{(car.price * 2).toLocaleString()}đ</Text>
+                </View>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Phí giao xe</Text>
+                  <Text style={styles.priceValue}>Miễn phí</Text>
+                </View>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Phí trả xe</Text>
+                  <Text style={styles.priceValue}>30,000đ</Text>
+                </View>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Phí bảo hiểm</Text>
+                  <Text style={styles.priceValue}>50,000đ</Text>
+                </View>
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Phí dịch vụ</Text>
+                  <Text style={styles.priceValue}>20,000đ</Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Tổng cộng</Text>
+                  <Text style={styles.priceValue}>{(car.price * 2 + 100000).toLocaleString()}đ</Text>
+                </View>
+                <View style={styles.discountRow}>
+                  <Text style={styles.discountLabel}>Giảm giá khách mới</Text>
+                  <Text style={styles.discountValue}>-100,000đ</Text>
+                </View>
+                <View style={styles.finalPriceRow}>
+                  <Text style={styles.finalPriceLabel}>Tổng thanh toán</Text>
+                  <Text style={styles.finalPriceValue}>{(car.price * 2).toLocaleString()}đ</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Owner Info */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>👨‍💼 Thông tin chủ xe</Text>
+              <View style={styles.ownerBox}>
+                <View style={styles.ownerAvatar}>
+                  <Ionicons name="person" size={32} color="#4a5568" />
+                </View>
+                <View style={styles.ownerInfo}>
+                  <Text style={styles.ownerName}>Trần Nhật Tiến</Text>
+                  <View style={styles.ownerRating}>
+                    <Ionicons name="star" size={14} color="#fbbf24" />
+                    <Text style={styles.ownerRatingText}>4.9 (23 chuyến)</Text>
+                  </View>
+                  <Text style={styles.ownerPhone}>📞 090-123-4567</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Next Steps */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📱 Bạn sẽ nhận được</Text>
+              <View style={styles.nextSteps}>
+                <View style={styles.stepItem}>
+                  <Ionicons name="mail" size={20} color="#38a169" />
+                  <Text style={styles.stepText}>Email xác nhận</Text>
+                </View>
+                <View style={styles.stepItem}>
+                  <Ionicons name="chatbubble" size={20} color="#38a169" />
+                  <Text style={styles.stepText}>SMS thông báo</Text>
+                </View>
+                <View style={styles.stepItem}>
+                  <Ionicons name="call" size={20} color="#38a169" />
+                  <Text style={styles.stepText}>Liên hệ chủ xe</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.modifyButton} onPress={onModify}>
+                <Text style={styles.modifyButtonText}>📝 Chỉnh sửa</Text>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Text style={styles.closeText}>Đóng</Text>
+              
+              <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+                <LinearGradient
+                  colors={['#38a169', '#2f855a']}
+                  style={styles.confirmGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.confirmButtonText}>✅ Hoàn tất</Text>
+                </LinearGradient>
               </TouchableOpacity>
-            )}
-          </ScrollView>
-        </View>
+            </View>
+          </View>
+        </ScrollView>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-end',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    zIndex: 100,
+    justifyContent: "flex-end",
   },
-  background: {
-    flex: 1,
+  bg: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  content: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '92%',
+  container: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "95%",
+    paddingBottom: 16,
+    paddingTop: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 30,
+    paddingBottom: 16,
+  },
+  header: {
+    alignItems: "center",
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
+  successIcon: {
+    marginBottom: 12,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2d3748",
+    marginBottom: 4,
+  },
+  orderNumber: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4a5568",
+  },
+  carImage: {
+    width: "100%",
+    height: 180,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+  },
+  carName: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2d3748",
+    marginBottom: 8,
+  },
+  carSpecs: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  specItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  specText: {
+    fontSize: 14,
+    color: "#4a5568",
+    marginLeft: 4,
+    fontWeight: "500",
+  },
+  section: {
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    marginTop: 20,
-    color: '#009CA6',
+    fontWeight: "700",
+    color: "#2d3748",
+    marginBottom: 12,
   },
-  box: {
-    backgroundColor: '#F5F5F5',
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  detailItem: {
+    flex: 1,
+    backgroundColor: "#f7fafc",
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: "#718096",
+    marginBottom: 4,
+    fontWeight: "500",
+  },
+  detailValue: {
+    fontSize: 14,
+    color: "#2d3748",
+    fontWeight: "600",
+  },
+  locationBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  locationText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#2d3748",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  freeText: {
+    fontSize: 14,
+    color: "#38a169",
+    fontWeight: "700",
+  },
+  priceBreakdown: {
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  priceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
-  primary: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  sub: {
-    color: '#666',
-    marginTop: 4,
+  priceLabel: {
     fontSize: 14,
+    color: "#4a5568",
   },
-  label: {
-    color: '#555',
+  priceValue: {
     fontSize: 14,
+    color: "#2d3748",
+    fontWeight: "600",
   },
-  text: {
+  divider: {
+    height: 1,
+    backgroundColor: "#e2e8f0",
+    marginVertical: 8,
+  },
+  discountRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  discountLabel: {
     fontSize: 14,
-    color: '#333',
-    marginTop: 4,
+    color: "#38a169",
+    fontWeight: "600",
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 3,
+  discountValue: {
+    fontSize: 14,
+    color: "#38a169",
+    fontWeight: "700",
   },
-  rowTotal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-    marginTop: 10,
+  finalPriceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
     paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
   },
-  totalLabel: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    color: '#222',
-  },
-  totalAmount: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    color: '#009CA6',
-  },
-  closeButton: {
-    backgroundColor: '#FF9800',
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  closeText: {
-    color: '#FFF',
-    fontWeight: 'bold',
+  finalPriceLabel: {
     fontSize: 16,
+    color: "#2d3748",
+    fontWeight: "700",
+  },
+  finalPriceValue: {
+    fontSize: 18,
+    color: "#2d3748",
+    fontWeight: "800",
+  },
+  ownerBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  ownerAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  ownerInfo: {
+    flex: 1,
+  },
+  ownerName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2d3748",
+    marginBottom: 4,
+  },
+  ownerRating: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  ownerRatingText: {
+    fontSize: 14,
+    color: "#4a5568",
+    marginLeft: 4,
+    fontWeight: "500",
+  },
+  ownerPhone: {
+    fontSize: 14,
+    color: "#4a5568",
+    fontWeight: "500",
+  },
+  nextSteps: {
+    backgroundColor: "#f0fff4",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#c6f6d5",
+  },
+  stepItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  stepText: {
+    fontSize: 14,
+    color: "#2d3748",
+    marginLeft: 8,
+    fontWeight: "500",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    marginTop: 24,
+    gap: 12,
+  },
+  modifyButton: {
+    flex: 1,
+    backgroundColor: "#f7fafc",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  modifyButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4a5568",
+  },
+  confirmButton: {
+    flex: 2,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  confirmGradient: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
   },
 });
 
