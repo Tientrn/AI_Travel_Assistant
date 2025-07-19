@@ -3,16 +3,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import BookingForm from "../components/bookingform";
 import CarDetailModal from "../components/CarDetailModal";
@@ -229,16 +229,8 @@ export default function HomeScreen() {
         { label: "📱 Chế độ toàn màn hình", intent: "fullscreen_map" },
       ]);
     } else if (intent === "chat_driver") {
-      setMessages((prev: any[]) => [
-        ...prev,
-        { type: "ai", text: "💬 **CHAT VỚI TÀI XẾ**\n\n👨‍💼 **Tài xế**: Anh Nguyễn Văn A\n📱 **Trạng thái**: Online\n⏰ **Phản hồi trung bình**: 30 giây\n\n💬 **Tin nhắn gần đây**:\n• Tài xế: \"Tôi sẽ đến trong 10 phút nữa\"\n• Bạn: \"OK, tôi sẽ đợi ở cổng chính\"\n\nNhập tin nhắn bên dưới để chat với tài xế!" },
-      ]);
-      setQuickSuggestions([
-        { label: "📍 Gửi vị trí", intent: "send_location" },
-        { label: "⏰ Hỏi thời gian", intent: "ask_time" },
-        { label: "🚪 Hướng dẫn điểm đón", intent: "pickup_guide" },
-        { label: "📞 Chuyển sang gọi", intent: "switch_to_call" },
-      ]);
+      router.push('/screens/ChatwithDriver');
+      return;
     } else if (intent === "view_driver_photo") {
       setMessages((prev: any[]) => [
         ...prev,

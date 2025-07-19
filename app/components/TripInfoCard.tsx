@@ -1,5 +1,6 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -21,6 +22,8 @@ const TripInfoCard = ({
   price = "125,000 VND",
   isPremium = true,
 }) => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -104,7 +107,7 @@ const TripInfoCard = ({
               <Text style={styles.callButtonText}>Gọi điện</Text>
             </LinearGradient>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.messageButton}>
+          <TouchableOpacity style={styles.messageButton} onPress={() => router.push('/screens/ChatwithDriver')}>
             <Ionicons name="chatbubble-ellipses-outline" size={18} color="#009CA6" />
             <Text style={styles.messageButtonText}>Nhắn tin</Text>
           </TouchableOpacity>
