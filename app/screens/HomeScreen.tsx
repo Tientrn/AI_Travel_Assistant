@@ -86,8 +86,16 @@ export default function HomeScreen() {
   // Xử lý voice input (giả lập)
   const handleVoiceInput = async () => {
     setIsRecording(true);
+    // Thêm message "Đang lắng nghe..." ngay khi bấm microphone
+    setMessages((prev: any[]) => [
+      ...prev,
+      { type: "ai", text: "Đang lắng nghe...", isListening: true }
+    ]);
+    
     const text = await fakeSpeechToText();
     setIsRecording(false);
+    // Xóa message "Đang lắng nghe..." và thêm kết quả
+    setMessages((prev: any[]) => prev.filter(msg => !msg.isListening));
     setInput(text as string);
     // Tự động gửi luôn hoặc để user xác nhận, ở đây tự động gửi luôn
     handleSend(text as string);
@@ -191,8 +199,17 @@ export default function HomeScreen() {
           <View style={styles.avatarWrap}>
             <Ionicons name="sparkles" size={28} color="#F4C95D" />
           </View>
-          <View style={styles.aiMsgBubble}>
-            <Text style={styles.aiMsgText}>{msg.text}</Text>
+          <View style={[
+            styles.aiMsgBubble,
+            msg.isListening && styles.listeningBubble
+          ]}>
+            <Text style={[
+              styles.aiMsgText,
+              msg.isListening && styles.listeningText
+            ]}>
+              {msg.text}
+              {msg.isListening && " 🎤"}
+            </Text>
           </View>
         </View>
       );
@@ -454,5 +471,18 @@ const styles = StyleSheet.create({
     color: "#009CA6",
     fontWeight: "bold",
     fontSize: 15,
+  },
+  listeningBubble: {
+    backgroundColor: "#E0F7FA",
+    borderColor: "#009CA6",
+    borderWidth: 1,
+    shadowColor: "#009CA6",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  listeningText: {
+    color: "#009CA6",
+    fontWeight: "bold",
   },
 });

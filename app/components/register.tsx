@@ -1,6 +1,6 @@
 import { FontAwesome } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function Register() {
   const [method, setMethod] = useState<'zalo' | 'whatsapp'>('zalo');
@@ -9,8 +9,71 @@ export default function Register() {
   const [sent, setSent] = useState<'zalo' | 'whatsapp' | null>(null);
   const [name, setName] = useState('Nguyễn Văn A');
   const [phone, setPhone] = useState('0987654321');
+  const [countdown, setCountdown] = useState(0);
+  const [canResend, setCanResend] = useState(false);
 
   const otpRefs = useRef<Array<TextInput | null>>([]);
+  const shakeAnimation = useRef(new Animated.Value(0)).current;
+  const pulseAnimation = useRef(new Animated.Value(1)).current;
+
+  // Countdown timer
+  useEffect(() => {
+    let interval: number;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  // Shake animation khi OTP sai
+  const shakeOTP = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Pulse animation khi OTP đúng
+  const pulseOTP = () => {
+    Animated.sequence([
+      Animated.timing(pulseAnimation, {
+        toValue: 1.1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(pulseAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
   const handleOtpChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -25,16 +88,61 @@ export default function Register() {
     if (!value && idx > 0) {
       otpRefs.current[idx - 1]?.focus();
     }
+
+    // Kiểm tra nếu OTP đầy đủ
+    if (newOtp.every(x => x) && newOtp.join('') === '123456') {
+      pulseOTP();
+    }
   };
 
   const handleSelectMethod = (m: 'zalo' | 'whatsapp') => {
     setMethod(m);
     setLoading(m);
     setSent(null);
+    setCountdown(0);
+    setCanResend(false);
+    
     setTimeout(() => {
       setLoading(null);
       setSent(m);
+      setCountdown(60); // 60 giây countdown
+      setCanResend(false);
     }, 2000); // 2 giây loading
+  };
+
+  const handleResendOTP = () => {
+    if (!canResend) return;
+    
+    setCountdown(60);
+    setCanResend(false);
+    setOtp(['', '', '', '', '', '']);
+    
+    // Animation khi gửi lại
+    shakeAnimation.setValue(0);
+    shakeOTP();
+  };
+
+  const handleConfirmOTP = () => {
+    if (!otp.every(x => x)) return;
+    
+    const otpString = otp.join('');
+    if (otpString === '123456') {
+      pulseOTP();
+      setTimeout(() => {
+        const { router } = require('expo-router');
+        router.push('/screens/SurveyScreen');
+      }, 500);
+    } else {
+      shakeOTP();
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -97,7 +205,26 @@ export default function Register() {
         {/* Nhập mã OTP */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Nhập mã OTP</Text>
         <Text style={styles.label}>Chúng tôi đã gửi mã tới {method === 'zalo' ? 'Zalo' : 'WhatsApp'}</Text>
-        <View style={styles.otpRow}>
+        
+        {/* Countdown timer */}
+        {countdown > 0 && (
+          <View style={styles.countdownContainer}>
+            <FontAwesome name="clock-o" size={14} color="#F4C95D" />
+            <Text style={styles.countdownText}>Gửi lại mã sau {formatTime(countdown)}</Text>
+          </View>
+        )}
+        
+        <Animated.View 
+          style={[
+            styles.otpRow,
+            {
+              transform: [
+                { translateX: shakeAnimation },
+                { scale: pulseAnimation }
+              ]
+            }
+          ]}
+        >
           {otp.map((v, idx) => (
             <TextInput
               key={idx}
@@ -121,24 +248,34 @@ export default function Register() {
               }}
             />
           ))}
-        </View>
+        </Animated.View>
+        
         <TouchableOpacity
           style={[styles.confirmBtn, otp.every(x => x) ? {} : { opacity: 0.5 }]}
-          onPress={() => {
-            if (!otp.every(x => x)) return;
-          const { router } = require('expo-router');
-          router.push('/screens/SurveyScreen');
-          }}
+          onPress={handleConfirmOTP}
           disabled={!otp.every(x => x)}
         >
           <Text style={styles.confirmBtnText}>Xác nhận</Text>
         </TouchableOpacity>
+        
         <TouchableOpacity
-          style={[styles.resendBtn, loading ? { opacity: 0.5 } : {}]}
-          disabled={!!loading}
+          style={[
+            styles.resendBtn, 
+            canResend ? {} : { opacity: 0.5 }
+          ]}
+          onPress={handleResendOTP}
+          disabled={!canResend}
         >
-          <Text style={styles.resendBtnText}>Gửi lại mã</Text>
+          <Text style={[
+            styles.resendBtnText,
+            canResend ? { color: '#F4C95D' } : { color: '#ccc' }
+          ]}>
+            {canResend ? 'Gửi lại mã' : 'Gửi lại mã'}
+          </Text>
         </TouchableOpacity>
+        
+        {/* Hint cho test */}
+        <Text style={styles.hintText}>💡 Mã OTP test: 123456</Text>
       </View>
     </ScrollView>
   );
@@ -276,5 +413,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
     opacity: 0.85,
+  },
+  countdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: '#FDFDFD',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#009CA6',
+  },
+  countdownText: {
+    marginLeft: 5,
+    fontSize: 14,
+    color: '#009CA6',
+  },
+  hintText: {
+    marginTop: 10,
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
 }); 
