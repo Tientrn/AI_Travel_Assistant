@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 type CarData = {
@@ -122,7 +122,11 @@ const CarRentList: React.FC<CarRentListProps> = ({ onRentCar }) => {
   };
 
   const renderCarCard = ({ item }: { item: CarData }) => (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      onPress={() => onRentCar(item)}
+      activeOpacity={0.9}
+    >
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.image} />
@@ -134,7 +138,10 @@ const CarRentList: React.FC<CarRentListProps> = ({ onRentCar }) => {
         {/* Favorite Button */}
         <TouchableOpacity 
           style={styles.favoriteButton}
-          onPress={() => handleToggleFavorite(item.id)}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleToggleFavorite(item.id);
+          }}
         >
           <Ionicons 
             name={isCarFavorite(item.id) ? "heart" : "heart-outline"} 
@@ -212,7 +219,10 @@ const CarRentList: React.FC<CarRentListProps> = ({ onRentCar }) => {
           {/* Rent Button - Separate Line */}
           <TouchableOpacity
             style={styles.rentButton}
-            onPress={() => onRentCar(item)}
+            onPress={(e) => {
+              e.stopPropagation();
+              onRentCar(item);
+            }}
           >
             <LinearGradient
               colors={['rgba(0,0,0,0.9)', 'rgba(255,255,255,0.1)', 'rgba(0,0,0,0.8)']}
@@ -226,7 +236,7 @@ const CarRentList: React.FC<CarRentListProps> = ({ onRentCar }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
