@@ -40,6 +40,10 @@ export default function RootLayout() {
           name="screens/CarRentalScreen"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="screens/ConstractScreen"
+          options={{ headerShown: false }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GestureHandlerRootView>
