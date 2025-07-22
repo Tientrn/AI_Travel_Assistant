@@ -3,16 +3,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import BookingForm from "../components/bookingform";
 import CarDetailModal from "../components/CarDetailModal";
@@ -24,7 +24,7 @@ import TripInfoCard from "../components/TripInfoCard";
 const AI_AVATAR = require("../assets/images/welcome.jpg"); // Sử dụng ảnh AI hoặc icon
 
 const QUICK_SUGGESTIONS = [
-  { label: "Đặt xe đến sân bay", intent: "book_car" },
+  { label: "Đặt xe đến sân bay", intent: "book_car_airport" },
   { label: "Thuê xe tự lái", intent: "rent_car" },
   { label: "Xem thời tiết", intent: "weather" },
   { label: "Gợi ý địa điểm ăn uống", intent: "suggest_food" },
@@ -147,7 +147,18 @@ export default function HomeScreen() {
       setShowDetailBooking(false);
       setShowTripInfo(false);
       setQuickSuggestions([]);
-    } else if (intent === "rent_car") {
+    } else if (intent === "book_car_airport") {
+      setMessages((prev: any[]) => [
+        ...prev,
+        { type: "ai", text: "🚗 Đặt xe tới sân bay gần nhất? Hãy cung cấp thông tin chuyến bay và thời gian nhé!" },
+      ]);
+      setShowBooking(true);
+      setShowCarList(false);
+      setShowDetailBooking(false);
+      setShowTripInfo(false);
+      setQuickSuggestions([]);
+    }
+    else if (intent === "rent_car") {
       setMessages((prev: any[]) => [
         ...prev,
         { type: "ai", text: "Dưới đây là các xe tự lái phù hợp với bạn. Hãy chọn xe bạn muốn thuê!" },
@@ -672,18 +683,30 @@ export default function HomeScreen() {
           </ScrollView>
           {/* Quick Suggestions */}
           {quickSuggestions.length > 0 && (
-            <View style={styles.suggestionRow}>
-              {quickSuggestions.map((s, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={styles.suggestionBtn}
-                  onPress={() => handleSuggestion(s)}
-                >
-                  <Text style={styles.suggestionText}>{s.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+            <View>
+  <ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.suggestionRow}
+>
+  {quickSuggestions.map((s, idx) => (
+  <TouchableOpacity
+    key={idx}
+    style={styles.suggestionBtn}
+    onPress={() => handleSuggestion(s)}
+  >
+    <Text
+      numberOfLines={1}
+      ellipsizeMode="tail"
+      style={styles.suggestionText}
+    >
+      {s.label}
+    </Text>
+  </TouchableOpacity>
+))}
+</ScrollView>
+</View>
+)}
           {/* Thanh nhập nội dung */}
           <View style={styles.inputRow}>
             <TouchableOpacity onPress={handleVoiceInput} activeOpacity={0.7}>
@@ -727,6 +750,7 @@ export default function HomeScreen() {
           {showRentalDetails && selectedCar && (
             <RentalDetailsModal
               car={selectedCar}
+              visible={showRentalDetails}
               onClose={() => setShowRentalDetails(false)}
               onConfirm={handleRentalComplete}
               onModify={handleRentalModify}
@@ -829,22 +853,20 @@ const styles = StyleSheet.create({
     borderColor: "#009CA6",
     marginHorizontal: 8,
   },
-  suggestionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    marginBottom: 2,
-    gap: 8,
-  },
-  suggestionBtn: {
-    backgroundColor: "#E0F7FA",
-    borderRadius: 18,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    marginRight: 8,
-    marginBottom: 8,
-  },
+suggestionRow: {
+  flexDirection: "row",
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+},
+
+suggestionBtn: {
+  backgroundColor: "#E0F7FA",
+  borderRadius: 20,
+  paddingHorizontal: 14,
+  paddingVertical: 6,
+  alignSelf: "flex-start", // giữ chiều cao nhỏ gọn
+  maxWidth: 250, // nếu bạn muốn giới hạn độ dài tối đa (tùy chọn)
+},
   suggestionText: {
     color: "#009CA6",
     fontWeight: "bold",

@@ -15,14 +15,24 @@ type RentalDetailsModalProps = {
   onClose: () => void;
   onConfirm: () => void;
   onModify: () => void;
+  visible: boolean;
+  editable?: boolean;
+  details?: any;
+  onSave?: (newDetails: any) => void;
 };
 
 const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
-  car,
+   car,
   onClose,
   onConfirm,
   onModify,
+  visible,
+  editable = false,
+  details,
+  onSave,
 }) => {
+  if (!visible) return null;
+
   return (
     <View style={styles.overlay}>
       <TouchableOpacity style={styles.bg} activeOpacity={1} onPress={onClose} />
@@ -39,7 +49,7 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
 
           {/* Car Image */}
           <Image
-            source={{ uri: car.image }}
+            source={{ uri: "https://newcar.carlist.my/uploads/model_year_colour_images/133_large.jpg" }}
             style={styles.carImage}
             resizeMode="cover"
           />
@@ -171,7 +181,7 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
               <TouchableOpacity style={styles.modifyButton} onPress={onModify}>
-                <Text style={styles.modifyButtonText}>📝 Chỉnh sửa</Text>
+                <Text style={styles.modifyButtonText}>Chỉnh sửa</Text>
               </TouchableOpacity>
               
               <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
@@ -181,7 +191,7 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.confirmButtonText}>✅ Hoàn tất</Text>
+                  <Text style={styles.confirmButtonText}>Xác nhận</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
