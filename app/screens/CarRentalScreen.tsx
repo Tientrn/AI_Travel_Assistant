@@ -12,68 +12,139 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { ContractModal } from '../components/ContractModal';
 import HeaderBar from '../components/HeaderBar';
 import RentalDetailsModal from '../components/RentalDetailsModal';
 import VerifyInfoModal from '../components/VerifyInfoModal';
+
+interface Message {
+  type: 'user' | 'system' | 'ai';
+  text: string;
+  showContractButton?: boolean;
+  isListening?: boolean;
+}
 
 const CarRentalScreen = () => {
   const [input, setInput] = useState('');
   const inputRef = useRef<TextInput>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showContractModal, setShowContractModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [details, setDetails] = useState<any>(null);
-  const [messages, setMessages] = useState<
-    { type: 'user' | 'system'; text: string }[]
-  >([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   
+  const lastMessageRef = useRef('');
 
-const lastMessageRef = useRef('');
+  const handleSend = (overrideText?: string) => {
+    const text = (overrideText ?? input).trim();
+    if (!text || text === lastMessageRef.current) return;
 
-const handleSend = (overrideText?: string) => {
-  const text = (overrideText ?? input).trim();
-  if (!text || text === lastMessageRef.current) return;
+    lastMessageRef.current = text;
+    setMessages((prev) => [...prev, { type: 'user', text }]);
+    setInput('');
+  };
 
-  lastMessageRef.current = text;
-  setMessages((prev) => [...prev, { type: 'user', text }]);
-  setInput('');
-};
+  const handleVerifySubmit = (info: any) => {
+    console.log('Thông tin đã gửi:', info);
+    
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: 'system',
+        text: 'Thông tin của bạn đã được xác nhận. Bây giờ bạn có thể xem và ký hợp đồng thuê xe.',
+        showContractButton: true,
+      },
+    ]);
+    
+    setShowVerifyModal(false);
+  };
 
+  const handleConfirmRental = () => {
+    handleSend("Xác nhận"); 
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: 'system',
+        text: 'Đã ghi nhận yêu cầu thuê xe của bạn!\n\nTrước khi tiếp tục, bạn cần xác minh thông tin cá nhân.\nHãy gửi:\n- Họ tên\n- Số điện thoại\n- Ảnh CCCD / CMND\n- Ảnh bằng lái xe',
+      },
+    ]);
+  };
 
+  const renderMessage = (msg: Message, idx: number) => {
+    if (msg.type === "ai") {
+      return (
+        <View key={idx} style={styles.aiMsgRow}>
+          <View style={styles.avatarWrap}>
+            <Ionicons name="sparkles" size={28} color="#F4C95D" />
+          </View>
+          <View style={[
+            styles.aiMsgBubble,
+            msg.isListening && styles.listeningBubble
+          ]}>
+            <Text style={[
+              styles.aiMsgText,
+              msg.isListening && styles.listeningText
+            ]}>
+              {msg.text}
+              {msg.isListening && " 🎤"}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+    
+    if (msg.type === "user") {
+      return (
+        <View key={idx} style={styles.userMsgRow}>
+          <View style={styles.userMsgBubble}>
+            <Text style={styles.userMsgText}>{msg.text}</Text>
+          </View>
+        </View>
+      );
+    }
+    
+    return null;
+  };
 
-  const renderMessage = (msg: any, idx: number) => {
-      if (msg.type === "ai") {
-        return (
-          <View key={idx} style={styles.aiMsgRow}>
+  const renderSystemMessage = (msg: Message, idx: number) => {
+    const showVerify = msg.text.includes('xác minh thông tin') && !msg.showContractButton;
+    const showContract = msg.showContractButton;
+
+    return (
+      <React.Fragment key={idx}>
+        <View style={{ paddingBottom: 10, alignSelf: 'flex-start', maxWidth: '85%' }}>
+          <View style={styles.aiMsgRow}>
             <View style={styles.avatarWrap}>
               <Ionicons name="sparkles" size={28} color="#F4C95D" />
             </View>
-            <View style={[
-              styles.aiMsgBubble,
-              msg.isListening && styles.listeningBubble
-            ]}>
-              <Text style={[
-                styles.aiMsgText,
-                msg.isListening && styles.listeningText
-              ]}>
-                {msg.text}
-                {msg.isListening && " 🎤"}
-              </Text>
+            <View style={styles.aiMsgBubble}>
+              <Text style={styles.aiMsgText}>{msg.text}</Text>
             </View>
           </View>
-        );
-      }
-      if (msg.type === "user") {
-        return (
-          <View key={idx} style={styles.userMsgRow}>
-            <View style={styles.userMsgBubble}>
-              <Text style={styles.userMsgText}>{msg.text}</Text>
-            </View>
-          </View>
-        );
-      }
-      return null;
-    };
+
+          {showVerify && (
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={() => setShowVerifyModal(true)}
+            >
+              <Text style={styles.verifyButtonText}>Xác minh thông tin</Text>
+            </TouchableOpacity>
+          )}
+
+          {showContract && (
+            <TouchableOpacity
+              style={[styles.verifyButton, styles.contractButton]}
+              onPress={() => setShowContractModal(true)}
+            >
+              <Ionicons name="document-text-outline" size={16} color="#FFF" style={{ marginRight: 6 }} />
+              <Text style={styles.verifyButtonText}>Xem hợp đồng</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </React.Fragment>
+    );
+  };
 
   return (
     <LinearGradient colors={['#009CA6', '#FDFDFD']} style={{ flex: 1 }}>
@@ -86,15 +157,19 @@ const handleSend = (overrideText?: string) => {
           <HeaderBar title="AI Travel Assistant" />
           
           <ScrollView contentContainerStyle={styles.content}>
-              <View style={styles.aiMsgRow}>
-                <View style={styles.avatarWrap}>
-                  <Ionicons name="sparkles" size={28} color="#F4C95D" />
-                </View>
-                <View style={styles.aiMsgBubble}>
-                  <Text style={styles.aiMsgText}>Đây là thông tin thuê xe, hãy xác nhận lại trước khi thực hiện thuê xe.</Text>
-                </View>
+            {/* Initial AI Message */}
+            <View style={styles.aiMsgRow}>
+              <View style={styles.avatarWrap}>
+                <Ionicons name="sparkles" size={28} color="#F4C95D" />
               </View>
+              <View style={styles.aiMsgBubble}>
+                <Text style={styles.aiMsgText}>
+                  Đây là thông tin thuê xe, hãy xác nhận lại trước khi thực hiện thuê xe.
+                </Text>
+              </View>
+            </View>
             
+            {/* Rental Details Card */}
             <View style={styles.detailsCard}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>Thông tin thuê xe</Text>
@@ -105,91 +180,50 @@ const handleSend = (overrideText?: string) => {
 
               <View style={styles.cardContent}>
                 <View style={styles.detailRow}>
-                  <Ionicons
-                    name="car-outline"
-                    size={20}
-                    color="#009CA6"
-                    style={styles.icon}
-                  />
+                  <Ionicons name="car-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Xe: </Text>
                   <Text style={styles.textHighlight}>Corolla Altis 2018</Text>
                   <Text style={styles.subDetail}> – 4 chỗ • Xăng • Số tự động</Text>
                 </View>
 
                 <View style={styles.detailRow}>
-                  <Ionicons
-                    name="location-outline"
-                    size={20}
-                    color="#009CA6"
-                    style={styles.icon}
-                  />
+                  <Ionicons name="location-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Nhận xe: </Text>
-                  <Text style={styles.textHighlight}>
-                    Huyện Phú Quốc, Kiên Giang
-                  </Text>
+                  <Text style={styles.textHighlight}>Huyện Phú Quốc, Kiên Giang</Text>
                 </View>
 
                 <View style={styles.detailRow}>
-                  <Ionicons
-                    name="time-outline"
-                    size={20}
-                    color="#009CA6"
-                    style={styles.icon}
-                  />
+                  <Ionicons name="time-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Thời gian: </Text>
-                  <Text style={styles.textHighlight}>
-                    10:00 20/06 ➔ 10:00 21/06
-                  </Text>
+                  <Text style={styles.textHighlight}>10:00 20/06 ➔ 10:00 21/06</Text>
                   <Text style={styles.subDetail}> (1 ngày)</Text>
                 </View>
 
                 <View style={styles.detailRow}>
-                  <Ionicons
-                    name="speedometer-outline"
-                    size={20}
-                    color="#009CA6"
-                    style={styles.icon}
-                  />
+                  <Ionicons name="speedometer-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Giới hạn: </Text>
                   <Text style={styles.textHighlight}>300km/ngày</Text>
                   <Text style={styles.subDetail}> – Nhận & trả đầy bình</Text>
                 </View>
 
                 <View style={[styles.detailRow, { marginTop: 8 }]}>
-                  <Ionicons
-                    name="cash-outline"
-                    size={20}
-                    color="#009CA6"
-                    style={styles.icon}
-                  />
+                  <Ionicons name="cash-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Tổng chi phí: </Text>
-                  <Text style={[styles.textHighlight, { fontSize: 16 }]}>
-                    755,200đ
-                  </Text>
+                  <Text style={[styles.textHighlight, { fontSize: 16 }]}>755,200đ</Text>
                   <Text style={styles.subDetail}> (chưa gồm phụ phí)</Text>
                 </View>
               </View>
             </View>
 
+            {/* Action Buttons */}
             <View style={styles.actionButtons}>
-              
               <TouchableOpacity
                 style={[styles.button, styles.confirmButton]}
-                onPress={() => {
-                handleSend("Xác nhận"); 
-                setMessages((prev) => [
-                ...prev,
-    {
-      type: 'system',
-      text:
-        'Đã ghi nhận yêu cầu thuê xe của bạn!\n\nTrước khi tiếp tục, bạn cần xác minh thông tin cá nhân.\nHãy gửi:\n- Họ tên\n- Số điện thoại\n- Ảnh CCCD / CMND\n- Ảnh bằng lái xe',
-    },
-  ]);
-}}
-
+                onPress={handleConfirmRental}
               >
                 <Text style={styles.buttonText}>Xác nhận</Text>
               </TouchableOpacity>
+              
               <TouchableOpacity
                 style={[styles.button, styles.editButton]}
                 onPress={() => {
@@ -201,59 +235,19 @@ const handleSend = (overrideText?: string) => {
               </TouchableOpacity>
             </View>
 
-{messages.map((msg, idx) => {
-  if (msg.type === 'system') {
-    const showVerify =
-      msg.text.includes('xác minh thông tin'); // check cụ thể từng msg
+            {/* Messages */}
+            {messages.map((msg, idx) => {
+              if (msg.type === 'system') {
+                return renderSystemMessage(msg, idx);
+              }
+              return renderMessage(msg, idx);
+            })}
+          </ScrollView>
 
-    return (
-      <React.Fragment key={idx}>
-        <View style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
-          <View style={styles.aiMsgRow}>
-            <View style={styles.avatarWrap}>
-              <Ionicons name="sparkles" size={28} color="#F4C95D" />
-            </View>
-            <View style={styles.aiMsgBubble}>
-              <Text style={styles.aiMsgText}>{msg.text}</Text>
-            </View>
-          </View>
-
-        {showVerify && (
-          <View>
-            <TouchableOpacity
-              style={styles.verifyButton}
-              onPress={() => setShowVerifyModal(true)}
-            >
-              <Text style={styles.verifyButtonText}>Xác minh thông tin</Text>
-            </TouchableOpacity>
-
-            <VerifyInfoModal
-              visible={showVerifyModal}
-              onClose={() => setShowVerifyModal(false)}
-              onSubmit={(info) => {
-                console.log('Thông tin đã gửi:', info);
-                // TODO: xử lý lưu hoặc gửi API
-              }}
-            />
-          </View>
-        )}
-      </View>
-    </React.Fragment>
-  );
-}
-  // You may want to handle other message types here
-  return renderMessage(msg, idx);
-})}
-</ScrollView>
-
+          {/* Input Row */}
           <View style={styles.inputRow}>
             <TouchableOpacity activeOpacity={0.7}>
-              <Ionicons
-                name="happy-outline"
-                size={24}
-                color="#009CA6"
-                style={{ marginHorizontal: 8 }}
-              />
+              <Ionicons name="happy-outline" size={24} color="#009CA6" style={{ marginHorizontal: 8 }} />
             </TouchableOpacity>
 
             <TextInput
@@ -269,29 +263,20 @@ const handleSend = (overrideText?: string) => {
 
             {input.length > 0 && (
               <TouchableOpacity onPress={() => setInput('')} activeOpacity={0.7}>
-                <Ionicons
-                  name="close-circle"
-                  size={22}
-                  color="#009CA6"
-                  style={{ marginRight: 4 }}
-                />
+                <Ionicons name="close-circle" size={22} color="#009CA6" style={{ marginRight: 4 }} />
               </TouchableOpacity>
             )}
 
             <TouchableOpacity onPress={() => inputRef.current?.focus()}>
-              <Ionicons
-                name="mic-outline"
-                size={24}
-                color="#009CA6"
-                style={{ marginHorizontal: 8 }}
-              />
+              <Ionicons name="mic-outline" size={24} color="#009CA6" style={{ marginHorizontal: 8 }} />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => handleSend()}>
               <Ionicons name="send" size={24} color="#F4C95D" />
             </TouchableOpacity>
-            </View>
+          </View>
 
+          {/* Modals */}
           <RentalDetailsModal
             visible={showDetail}
             onClose={() => {
@@ -316,12 +301,24 @@ const handleSend = (overrideText?: string) => {
               location: 'Huyện Phú Quốc, Kiên Giang',
               price: 377600,
             }}
-            onConfirm={() => {
-              console.log('Rental confirmed');
-            }}
+            onConfirm={() => console.log('Rental confirmed')}
             onModify={() => {
               setEditMode(true);
               setShowDetail(true);
+            }}
+          />
+
+          <VerifyInfoModal
+            visible={showVerifyModal}
+            onClose={() => setShowVerifyModal(false)}
+            onSubmit={handleVerifySubmit}
+          />
+          <ContractModal
+            visible={showContractModal}
+            onClose={() => setShowContractModal(false)}
+            onConfirm={() => {
+              console.log('Hợp đồng đã được ký');
+              setShowContractModal(false);
             }}
           />
         </KeyboardAvoidingView>
@@ -415,21 +412,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-verifyButton: {
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 12,
-  backgroundColor: '#FFB300',
-  alignSelf: 'flex-start',
-  marginTop: 4,
-  marginLeft: 44,
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowOffset: { width: 0, height: 2 },
-  elevation: 3,
-},
-
-
+  verifyButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#FFB300',
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    marginLeft: 44,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  contractButton: {
+    backgroundColor: '#4CAF50',
+    marginTop: 4,
+  },
   verifyButtonText: {
     color: '#FFF',
     fontWeight: 'bold',
@@ -461,20 +462,7 @@ verifyButton: {
     borderColor: '#009CA6',
     marginHorizontal: 8,
   },
-  systemMsg: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-    maxWidth: '90%',
-  },
-  systemMsgText: {
-    color: '#222',
-    fontSize: 15,
-    lineHeight: 21,
-  },
-    avatarWrap: {
+  avatarWrap: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -484,29 +472,7 @@ verifyButton: {
     marginRight: 8,
     marginTop: 2,
   },
-  headerSection: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#E6FFFA', // Light teal background for visibility
-  padding: 16, // Padding around the section
-  marginHorizontal: 10, // Aligns the section within the page layout
-  borderRadius: 12, // Subtle curve for the box
-  marginBottom: 12, // Adds space below the header
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowOffset: { width: 0, height: 2 },
-  elevation: 2,
-},
-headerTextWrap: {
-  flex: 1, // Ensures the text takes up remaining space
-},
-headerText: {
-  color: '#2D3748', // Dark gray for text readability
-  fontSize: 15,
-  fontWeight: '400',
-  lineHeight: 20,
-},
-aiMsgRow: {
+  aiMsgRow: {
     flexDirection: "row",
     marginBottom: 12,
     alignItems: "flex-start",
@@ -558,6 +524,6 @@ aiMsgRow: {
     color: "#009CA6",
     fontWeight: "bold",
   },
-  },);
+});
 
 export default CarRentalScreen;

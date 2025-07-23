@@ -44,6 +44,10 @@ export default function RootLayout() {
           name="screens/ConstractScreen"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="screens/Index"
+          options={{ headerShown: false }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GestureHandlerRootView>

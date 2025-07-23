@@ -22,7 +22,7 @@ type RentalDetailsModalProps = {
 };
 
 const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
-   car,
+  car,
   onClose,
   onConfirm,
   onModify,
@@ -32,6 +32,11 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
   onSave,
 }) => {
   if (!visible) return null;
+
+  const handleConfirm = () => {
+    onConfirm(); // Execute the original confirm logic
+    onClose(); // Close the modal
+  };
 
   return (
     <View style={styles.overlay}>
@@ -49,7 +54,7 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
 
           {/* Car Image */}
           <Image
-            source={{ uri: "https://newcar.carlist.my/uploads/model_year_colour_images/133_large.jpg" }}
+            source={require("../assets/images/car.jpg")}
             style={styles.carImage}
             resizeMode="cover"
           />
@@ -183,8 +188,7 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
               <TouchableOpacity style={styles.modifyButton} onPress={onModify}>
                 <Text style={styles.modifyButtonText}>Chỉnh sửa</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
+              <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
                 <LinearGradient
                   colors={['#38a169', '#2f855a']}
                   style={styles.confirmGradient}
