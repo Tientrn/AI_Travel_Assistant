@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   Image,
@@ -31,12 +32,17 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
   details,
   onSave,
 }) => {
+
+  const router = useRouter();
+
   if (!visible) return null;
 
   const handleConfirm = () => {
-    onConfirm(); // Execute the original confirm logic
-    onClose(); // Close the modal
+    onConfirm();
+    onClose();
+    router.push("/screens/CarRentalScreen");
   };
+
 
   return (
     <View style={styles.overlay}>
@@ -48,13 +54,13 @@ const RentalDetailsModal: React.FC<RentalDetailsModalProps> = ({
             <View style={styles.successIcon}>
               <Ionicons name="checkmark-circle" size={48} color="#38a169" />
             </View>
-            <Text style={styles.successTitle}>Thuê xe thành công!</Text>
+            <Text style={styles.successTitle}>Thông tin thuê xe</Text>
             <Text style={styles.orderNumber}>Mã đơn: #RENT2025001</Text>
           </View>
 
           {/* Car Image */}
           <Image
-            source={require("../assets/images/car.jpg")}
+            source={{uri: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=250&fit=crop"}}
             style={styles.carImage}
             resizeMode="cover"
           />

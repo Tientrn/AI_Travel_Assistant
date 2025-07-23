@@ -48,7 +48,7 @@ export const ContractModal = ({ visible, onClose, onConfirm }: ContractModalProp
         >
           {/* Car Info Card - Simplified */}
           <View style={styles.card}>
-            <Text style={styles.carTitle}>Corolla Altis 2018</Text>
+            <Text style={styles.carTitle}>Toyota Camry 2022</Text>
             <Text style={styles.orderCode}>Mã đơn: #MH2031</Text>
             
             <View style={styles.infoRow}>

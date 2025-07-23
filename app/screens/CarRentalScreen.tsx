@@ -182,7 +182,7 @@ const CarRentalScreen = () => {
                 <View style={styles.detailRow}>
                   <Ionicons name="car-outline" size={20} color="#009CA6" style={styles.icon} />
                   <Text style={styles.detailLabel}>Xe: </Text>
-                  <Text style={styles.textHighlight}>Corolla Altis 2018</Text>
+                  <Text style={styles.textHighlight}>Toyota Camry 2022</Text>
                   <Text style={styles.subDetail}> – 4 chỗ • Xăng • Số tự động</Text>
                 </View>
 
@@ -291,7 +291,7 @@ const CarRentalScreen = () => {
               setEditMode(false);
             }}
             car={{
-              name: 'Corolla Altis 2018',
+              name: 'Toyota Camry 2022',
               image: 'https://i.imgur.com/your_car_image.jpg',
               seats: 4,
               transmission: 'Số tự động',
